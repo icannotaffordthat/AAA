@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>رقعة الشطرنج — شرح تفاعلي لبرنامج C++</title>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#131a2b;--bg3:#1a2340;--card:#182038;
+  --fg:#f0ebe0;--fg2:#b4bdd4;--fg3:#7c89a8;
+  --indigo:#8b7cf6;--indigo-d:#6d5dd3;
+  --teal:#2dd4bf;--teal-d:#14b8a6;
+  --amber:#fbbf24;--amber-d:#d97706;
+  --red:#f87171;--red-d:#dc2626;
+  --green:#4ade80;
+  --border:#2a3556;--border2:#3d4a72;
+  --code-bg:#0a0e1a;--code-fg:#d4d4d4;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 4px 24px rgba(0,0,0,.35);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.25);
+  --mono:'Cascadia Code','Fira Code','Consolas','Courier New',monospace;
+  --sans:'Segoe UI','Tahoma','Geneva','Verdana',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{font-family:var(--sans);background:var(--bg);color:var(--fg);line-height:1.8;font-size:16px;overflow-x:hidden}
+bdi{unicode-bidi:isolate}
+
+.progress-bar{position:fixed;top:0;right:0;left:0;height:3px;z-index:1000;background:transparent}
+.progress-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--indigo),var(--teal));transition:width .15s;border-radius:0 0 0 3px}
+
+header.site-header{position:sticky;top:0;z-index:900;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.6rem 1.2rem;display:flex;align-items:center;gap:1rem}
+.menu-toggle{display:none;background:none;border:1px solid var(--border2);color:var(--fg);padding:.4rem .7rem;border-radius:var(--radius-sm);cursor:pointer;font-size:1.2rem}
+.site-header h1{font-size:1.05rem;font-weight:600;color:var(--fg2);display:flex;align-items:center;gap:.5rem}
+.site-header h1 .icon{color:var(--indigo)}
+.header-spacer{flex:1}
+.header-download{font-size:.85rem;padding:.4rem .9rem;border-radius:var(--radius-sm);background:var(--indigo-d);color:#fff;text-decoration:none;font-weight:600;border:none;cursor:pointer;transition:background .2s}
+.header-download:hover{background:var(--indigo)}
+
+.layout{display:flex;max-width:1400px;margin:0 auto;gap:0}
+.sidebar{width:270px;flex-shrink:0;position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto;padding:1.5rem 1rem;border-left:1px solid var(--border)}
+.sidebar nav ol{list-style:none;counter-reset:navcount}
+.sidebar nav li{counter-increment:navcount;margin-bottom:.2rem}
+.sidebar nav a{display:flex;align-items:center;gap:.6rem;padding:.45rem .7rem;border-radius:var(--radius-sm);color:var(--fg3);text-decoration:none;font-size:.88rem;transition:all .15s;line-height:1.4}
+.sidebar nav a::before{content:counter(navcount,decimal-leading-zero);font-family:var(--mono);font-size:.72rem;color:var(--fg3);background:var(--bg2);padding:.1rem .4rem;border-radius:4px;min-width:1.8rem;text-align:center;flex-shrink:0}
+.sidebar nav a:hover{color:var(--fg);background:var(--bg2)}
+.sidebar nav a.active{color:var(--indigo);background:rgba(139,124,246,.1)}
+.sidebar nav a.active::before{color:var(--indigo);background:rgba(139,124,246,.15)}
+.sidebar-label{font-size:.75rem;color:var(--fg3);text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem;padding:0 .7rem}
+
+.nav-drawer{display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s}
+.nav-drawer.open{opacity:1;pointer-events:auto}
+.nav-drawer-panel{position:absolute;top:0;right:0;bottom:0;width:280px;background:var(--bg2);padding:1.5rem 1rem;overflow-y:auto;transform:translateX(100%);transition:transform .25s;border-left:1px solid var(--border)}
+.nav-drawer.open .nav-drawer-panel{transform:translateX(0)}
+.nav-drawer .sidebar-label{margin-top:1rem}
+.nav-drawer nav ol{list-style:none;counter-reset:navcount2}
+.nav-drawer nav li{counter-increment:navcount2}
+.nav-drawer nav a::before{content:counter(navcount2,decimal-leading-zero)}
+.nav-drawer-close{float:left;background:none;border:none;color:var(--fg2);font-size:1.5rem;cursor:pointer;padding:.2rem .5rem}
+
+main{flex:1;min-width:0;padding:0}
+.content{max-width:860px;margin:0 auto;padding:2rem 2.5rem 4rem}
+
+.hero{text-align:center;padding:5rem 2rem 4rem;background:radial-gradient(ellipse at top,rgba(139,124,246,.12),transparent 60%),radial-gradient(ellipse at bottom,rgba(45,212,191,.08),transparent 60%)}
+.hero-badge{display:inline-block;padding:.3rem 1rem;border-radius:20px;background:rgba(139,124,246,.12);border:1px solid rgba(139,124,246,.3);color:var(--indigo);font-size:.82rem;font-weight:600;margin-bottom:1.5rem}
+.hero h1{font-size:3rem;font-weight:800;margin-bottom:1rem;line-height:1.2;background:linear-gradient(135deg,var(--fg),var(--indigo) 60%,var(--teal));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p.lead{font-size:1.2rem;color:var(--fg2);max-width:620px;margin:0 auto 2.5rem}
+.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.8rem;border-radius:var(--radius);font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:all .2s;font-family:var(--sans)}
+.btn-primary{background:linear-gradient(135deg,var(--indigo-d),var(--indigo));color:#fff;box-shadow:0 4px 16px rgba(139,124,246,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(139,124,246,.5)}
+.btn-secondary{background:var(--bg3);color:var(--fg);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--border2)}
+.btn-ghost{background:transparent;color:var(--fg2);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--fg);border-color:var(--fg3)}
+
+.lesson{padding:3rem 0;border-bottom:1px solid var(--border)}
+.lesson:last-child{border-bottom:none}
+.lesson-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.lesson-num{font-family:var(--mono);font-size:1.6rem;font-weight:800;color:var(--indigo);background:rgba(139,124,246,.1);padding:.2rem .8rem;border-radius:var(--radius-sm);border:1px solid rgba(139,124,246,.25)}
+.lesson h2{font-size:1.7rem;font-weight:700;color:var(--fg)}
+.lesson h3{font-size:1.2rem;font-weight:600;color:var(--fg);margin:1.8rem 0 .8rem}
+.lesson h4{font-size:1.05rem;font-weight:600;color:var(--teal);margin:1.2rem 0 .5rem}
+.lesson p{margin-bottom:.9rem;color:var(--fg2)}
+.lesson p strong,.lesson strong{color:var(--fg)}
+.lesson ul,.lesson ol{margin:.5rem 0 1rem 1.5rem;color:var(--fg2)}
+.lesson li{margin-bottom:.4rem}
+.lesson li::marker{color:var(--indigo)}
+
+.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:1rem 0;box-shadow:var(--shadow-sm)}
+.code-block-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem .8rem;background:var(--bg2);border-bottom:1px solid var(--border)}
+.code-block-header .lang{font-family:var(--mono);font-size:.75rem;color:var(--fg3);text-transform:uppercase;letter-spacing:1px}
+.code-block-header .copy-btn{background:none;border:1px solid var(--border2);color:var(--fg3);padding:.2rem .6rem;border-radius:4px;cursor:pointer;font-size:.78rem;transition:all .15s;font-family:var(--sans)}
+.code-block-header .copy-btn:hover{color:var(--fg);border-color:var(--fg3)}
+.code-block-header .copy-btn.copied{color:var(--green);border-color:var(--green)}
+.code-block pre{direction:ltr;text-align:left;padding:1rem 1.2rem;font-family:var(--mono);font-size:.88rem;line-height:1.65;color:var(--code-fg);overflow-x:auto;white-space:pre}
+.code-block pre code{font-family:inherit}
+.code-excerpt{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem 1rem;margin:.8rem 0;font-family:var(--mono);font-size:.85rem;color:var(--code-fg);direction:ltr;text-align:left;overflow-x:auto;white-space:pre;line-height:1.6}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin:1rem 0;box-shadow:var(--shadow-sm)}
+.card-title{font-size:1rem;font-weight:600;color:var(--fg);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.card-title .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-indigo{background:var(--indigo)}.dot-teal{background:var(--teal)}.dot-amber{background:var(--amber)}.dot-red{background:var(--red)}
+
+.note{background:rgba(139,124,246,.06);border:1px solid rgba(139,124,246,.2);border-radius:var(--radius-sm);padding:.8rem 1.2rem;margin:1rem 0;font-size:.92rem;color:var(--fg2)}
+.note.note-warn{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.25)}
+.note.note-danger{background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.25)}
+.note-title{font-weight:600;color:var(--fg);margin-bottom:.3rem;display:block}
+
+.board-wrap{display:inline-block;direction:ltr;font-family:var(--mono);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.board-grid{display:inline-grid;grid-template-columns:auto repeat(8,minmax(2.2em,1fr));grid-template-rows:repeat(8,2.2em) auto;gap:0;border:2px solid var(--border2)}
+.board-grid.no-labels{grid-template-columns:repeat(8,minmax(2.2em,1fr));grid-template-rows:repeat(8,2.2em)}
+.sq{display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:700;cursor:default;user-select:none;transition:outline .12s;outline:0;position:relative}
+.sq.clickable{cursor:pointer}
+.sq.clickable:hover{outline:3px solid var(--amber);outline-offset:-3px;z-index:2}
+.sq.selected{outline:3px solid var(--amber);outline-offset:-3px;z-index:3}
+.sq.highlight{outline:3px solid var(--teal);outline-offset:-3px;z-index:2;animation:pulse 1s ease-in-out infinite}
+.sq.prep-active{outline:3px solid var(--amber);outline-offset:-3px;z-index:3;animation:pulse .8s ease-in-out infinite}
+.sq.prep-done{opacity:1}
+.sq.prep-pending{opacity:.35}
+@keyframes pulse{0%,100%{outline-color:var(--teal)}50%{outline-color:var(--amber)}}
+.rank-lbl{display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--fg3);font-weight:600;padding:0 .4em}
+.file-lbl{display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--fg3);font-weight:600;height:1.5em}
+.file-spacer{grid-column:1}
+
+.console-preview{background:#0a0e1a;border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;font-family:var(--mono);font-size:.9rem;line-height:1.5;color:#d4d4d4;direction:ltr;text-align:left;overflow-x:auto;white-space:pre;min-height:100px;box-shadow:var(--shadow-sm)}
+.console-preview-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.5rem .8rem;background:var(--bg2);border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0}
+.console-preview-toolbar .title{font-size:.8rem;color:var(--fg3)}
+.console-preview-wrap{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
+.console-preview-wrap .console-preview{border:none;border-radius:0}
+
+.controls{display:flex;gap:.5rem;flex-wrap:wrap;margin:.8rem 0}
+.ctrl-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--fg);padding:.4rem .9rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.85rem;transition:all .15s;font-family:var(--sans);display:inline-flex;align-items:center;gap:.4rem}
+.ctrl-btn:hover{background:var(--border2)}
+.ctrl-btn:disabled{opacity:.4;cursor:not-allowed}
+.ctrl-btn.active{background:var(--indigo-d);border-color:var(--indigo);color:#fff}
+
+.info-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin:.8rem 0}
+.info-row{display:flex;gap:1rem;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.9rem;flex-wrap:wrap}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--fg3);min-width:130px;font-weight:600}
+.info-value{color:var(--fg);font-family:var(--mono);direction:ltr}
+.info-value.code{background:var(--code-bg);padding:.1rem .4rem;border-radius:3px;font-size:.85rem}
+
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:.6rem .8rem;text-align:right;border:1px solid var(--border)}
+th{background:var(--bg2);color:var(--fg);font-weight:600}
+td{color:var(--fg2)}
+td code{font-family:var(--mono);background:var(--code-bg);padding:.1rem .3rem;border-radius:3px;font-size:.85rem;direction:ltr}
+
+.playground{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0}
+.playground-controls{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem}
+.playground-preview{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem}
+.field-group{margin-bottom:1.2rem}
+.field-group-title{font-size:.85rem;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.4rem 0;font-size:.9rem}
+.field label{color:var(--fg2);flex:1;cursor:pointer}
+.field .field-type{font-family:var(--mono);font-size:.72rem;color:var(--fg3);background:var(--bg2);padding:.1rem .3rem;border-radius:3px}
+.toggle{position:relative;width:38px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;cursor:pointer;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;right:3px;top:2px;background:var(--fg3);border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--indigo-d);border-color:var(--indigo)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(-16px);background:#fff}
+.text-input,.num-input,.char-input{background:var(--code-bg);border:1px solid var(--border2);color:var(--fg);padding:.3rem .5rem;border-radius:4px;font-family:var(--mono);font-size:.85rem;width:120px;direction:ltr;text-align:left}
+.text-input{width:160px}
+.char-input{width:50px;text-align:center}
+.num-input{width:70px;text-align:center}
+.playground-code{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;font-family:var(--mono);font-size:.82rem;color:var(--code-fg);direction:ltr;text-align:left;white-space:pre;overflow-x:auto;margin-top:1rem;max-height:200px;overflow-y:auto}
+
+.source-viewer{margin:1.5rem 0}
+.source-viewer .code-block pre{max-height:600px;overflow-y:auto}
+.source-line{display:block;counter-increment:srcline}
+.source-line::before{content:counter(srcline);display:inline-block;width:2.5rem;margin-right:.8rem;color:var(--fg3);text-align:right;user-select:none;border-right:1px solid var(--border);padding-right:.5rem}
+
+.decision-tree{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin:1rem 0}
+.decision-node{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:.6rem 1rem;margin:.5rem 0;font-size:.88rem;transition:all .2s}
+.decision-node.active{border-color:var(--amber);background:rgba(251,191,36,.08)}
+.decision-node.branch{margin-right:1.5rem;border-right:3px solid var(--border2)}
+.decision-node.branch-yes{border-right-color:var(--green)}
+.decision-node.branch-no{border-right-color:var(--red)}
+.decision-node code{font-family:var(--mono);background:var(--code-bg);padding:.1rem .3rem;border-radius:3px;font-size:.82rem;direction:ltr}
+.decision-arrow{color:var(--fg3);margin:0 .5rem;font-size:.8rem}
+
+.timeline{position:relative;margin:1.5rem 0;padding-right:2rem}
+.timeline::before{content:'';position:absolute;right:.5rem;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-step{position:relative;padding:.8rem 0 .8rem 1.5rem;cursor:pointer;transition:all .15s}
+.timeline-step::before{content:'';position:absolute;right:-1.6rem;top:1.1rem;width:12px;height:12px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);transition:all .15s}
+.timeline-step:hover::before{border-color:var(--indigo)}
+.timeline-step.active::before{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px rgba(251,191,36,.2)}
+.timeline-step.done::before{background:var(--teal-d);border-color:var(--teal)}
+.timeline-step-title{font-size:.9rem;color:var(--fg2);font-weight:600}
+.timeline-step.active .timeline-step-title{color:var(--amber)}
+.timeline-step.done .timeline-step-title{color:var(--teal)}
+.timeline-step-code{font-family:var(--mono);font-size:.78rem;color:var(--fg3);margin-top:.2rem;direction:ltr;text-align:left}
+
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.75rem;font-weight:600;font-family:var(--mono)}
+.badge-bool{background:rgba(45,212,191,.15);color:var(--teal)}
+.badge-int{background:rgba(139,124,246,.15);color:var(--indigo)}
+.badge-char{background:rgba(251,191,36,.15);color:var(--amber)}
+.badge-string{background:rgba(248,113,113,.15);color:var(--red)}
+.badge-enum{background:rgba(74,222,128,.15);color:var(--green)}
+.badge-struct{background:rgba(218,165,32,.15);color:#daa520}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1rem 0}
+.flex-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;margin:1rem 0}
+.center{text-align:center}
+.mono{font-family:var(--mono);direction:ltr;display:inline-block}
+.highlight-amber{background:rgba(251,191,36,.1);padding:.1rem .2rem;border-radius:3px}
+.highlight-teal{background:rgba(45,212,191,.1);padding:.1rem .2rem;border-radius:3px}
+.highlight-indigo{background:rgba(139,124,246,.1);padding:.1rem .2rem;border-radius:3px}
+
+.ansi-breakdown{font-family:var(--mono);font-size:.85rem;direction:ltr;text-align:left;background:var(--code-bg);padding:1rem;border-radius:var(--radius-sm);margin:.8rem 0;white-space:pre-wrap;word-break:break-all}
+.ansi-part{display:inline-block;padding:.15rem .4rem;border-radius:3px;margin:.1rem}
+.ansi-esc{background:rgba(248,113,113,.15);color:var(--red)}
+.ansi-cmd{background:rgba(139,124,246,.15);color:var(--indigo)}
+.ansi-val{background:rgba(251,191,36,.15);color:var(--amber)}
+.ansi-end{background:rgba(45,212,191,.15);color:var(--teal)}
+
+.char-tester{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin:1rem 0}
+.char-tester input{width:80px;text-align:center;font-size:1.5rem;font-family:var(--mono)}
+.char-tester-result{font-family:var(--mono);font-size:1.1rem;font-weight:700;padding:.5rem 1rem;border-radius:var(--radius-sm)}
+.char-tester-result.true{background:rgba(74,222,128,.15);color:var(--green)}
+.char-tester-result.false{background:rgba(248,113,113,.15);color:var(--red)}
+
+footer{text-align:center;padding:3rem 2rem;color:var(--fg3);font-size:.85rem;border-top:1px solid var(--border)}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg3);border:1px solid var(--border2);color:var(--fg);padding:.8rem 1.5rem;border-radius:var(--radius);font-size:.9rem;box-shadow:var(--shadow);z-index:2000;opacity:0;transition:all .3s;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-color:var(--teal)}
+.toast.warn{border-color:var(--amber)}
+.toast.error{border-color:var(--red)}
+
+@media(max-width:1024px){
+  .sidebar{display:none}
+  .menu-toggle{display:block}
+  .playground{grid-template-columns:1fr}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .content{padding:1.5rem 1rem 3rem}
+  .hero{padding:3rem 1rem 2.5rem}
+  .hero h1{font-size:2rem}
+  .hero p.lead{font-size:1rem}
+  .lesson h2{font-size:1.3rem}
+  .lesson{padding:2rem 0}
+  .board-grid{grid-template-columns:auto repeat(8,minmax(1.8em,1fr));grid-template-rows:repeat(8,1.8em) auto}
+  .board-grid .sq{font-size:.9rem}
+  .console-preview{font-size:.78rem}
+  .nav-drawer{display:block}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+@media print{
+  .sidebar,.menu-toggle,.nav-drawer,.progress-bar,.toast,.controls,.ctrl-btn,.header-download,.hero-buttons{display:none!important}
+  body{background:#fff;color:#000}
+  .hero{background:none}
+  .hero h1{-webkit-text-fill-color:#000;color:#000}
+  .lesson{page-break-inside:avoid;border-color:#ccc}
+  .card,.code-block,.console-preview{border-color:#ccc;box-shadow:none}
+  .console-preview{background:#f5f5f5;color:#000}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-bar-fill" id="progressFill"></div></div>
+
+<header class="site-header">
+  <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة">☰</button>
+  <h1><span class="icon">♟</span> رقعة الشطرنج — شرح C++</h1>
+  <div class="header-spacer"></div>
+  <button class="header-download" id="headerDownload">تنزيل الكود</button>
+</header>
+
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-panel">
+    <button class="nav-drawer-close" id="navDrawerClose">✕</button>
+    <div class="sidebar-label">أقسام الدرس</div>
+    <nav id="mobileNav"><ol></ol></nav>
+  </div>
+</div>
+
+<section class="hero" id="hero">
+  <span class="hero-badge">شرح تفاعلي · مبتدئين · C++</span>
+  <h1>كيف يبني برنامج C++<br>رقعة الشطرنج؟</h1>
+  <p class="lead">خلّينا نمشي خطوة خطوة، ونفهم كل سطر في الكود. بنشوف كيف البيانات بتتركّب، كيف الألوان بتتقرّر، وكيف الطرفية بترسم الرقعة.</p>
+  <div class="hero-buttons">
+    <button class="btn btn-primary" id="startBtn">ابدأ الشرح ←</button>
+    <button class="btn btn-secondary" id="heroDownload">↓ تنزيل الكود</button>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-label">أقسام الدرس</div>
+    <nav id="desktopNav"><ol></ol></nav>
+  </aside>
+
+  <main>
+    <div class="content">
+
+      <section class="lesson" id="sec-01">
+        <div class="lesson-header">
+          <span class="lesson-num">01</span>
+          <h2>ماذا يفعل هلّق البرنامج؟</h2>
+        </div>
+        <p>تخيّل إنك تفتح صندوق شطرنج جديد. أول شي بتسوّيه إنك ترتّب القطع على الرقعة بشكل البداية: ملك، وزير، قلوب، خيل، فيلة، وبيدق في كل خانة من الصفّين الأولين. هاي بالضبط اللي يسوّيه هلّق البرنامج: <strong>يجهّز رقعة شطرنج بحجم 8×8 ويطبعها على الشاشة</strong> بترتيب البداية.</p>
+        <p>بس انتبه: <strong>هلّق إحنا بنجهّز الرقعة ونطبعها، ولسّا ما صرنا نلعب</strong>. يعني ما في تحريك قطع، ما في أدوار، ما في checkmate. هلّق فقط بنشوف كيف البرنامج يبني الرقعة ويعرضها على الطرفية (Terminal).</p>
+        <div class="note">
+          <span class="note-title">ملاحظة مهمة</span>
+          هلّق البرنامج <strong>ليس لعبة شطرنج كاملة</strong>. هو فقط يجهّز ويعرض رقعة البداية. ما فيه قواعد تحريك، ما فيه أدوار لعب، وما فيه التحقق من حركة القطع.
+        </div>
+        <h3>ليش إحنا بنعمل هيك؟</h3>
+        <p>عشان كل فنكشن (دالة) تكون مسؤولة عن شغلة واضحة: وحدة تجهّز، وحدة تلوّن، وحدة تحطّ القطع، وحدة تطبع. هلّق بنتعلم كيف نفصل المسؤوليات — وهادي أهم مهارة في البرمجة.</p>
+      </section>
+
+      <section class="lesson" id="sec-02">
+        <div class="lesson-header">
+          <span class="lesson-num">02</span>
+          <h2>كيف بتظهر النتيجة النهائية؟</h2>
+        </div>
+        <p>قبل ما نغرق بالتفاصيل، خلّينا نشوف اللي بيطلعه البرنامج لما نشغّله. هادي معاينة تقريبية للّي بيظهر على الطرفية:</p>
+        <div class="console-preview-toolbar">
+          <span class="title">معاينة المخرجات — الإعدادات الافتراضية</span>
+          <button class="ctrl-btn" id="toggleColorsBtn">ألوان ANSI: <span id="toggleColorsLabel">تشغيل</span></button>
+        </div>
+        <div class="console-preview-wrap">
+          <pre class="console-preview" id="finalPreview" dir="ltr"></pre>
+        </div>
+        <p>شفت؟ البرنامج بيطلع:</p>
+        <ol>
+          <li><strong>سطر فارغ</strong> — عشان يفرّق المخرجات عن اللي قبله.</li>
+          <li><strong>العنوان</strong> — <span class="mono">CHESS</span></li>
+          <li><strong>اسم اللاعب الأسود</strong> — <span class="mono">Anonymous Black (Black)</span></li>
+          <li><strong>الرقعة</strong> — 8 صفوف، كل صف فيه رقم على اليسار و8 خانات</li>
+          <li><strong>أحرف الأعمدة</strong> — <span class="mono">a b c d e f g h</span></li>
+          <li><strong>سطر فارغ</strong> — فاصل</li>
+          <li><strong>اسم اللاعب الأبيض</strong> — <span class="mono">Anonymous White (White)</span></li>
+          <li><strong>المفتاح</strong> — يشرح معنى كل حرف</li>
+          <li><strong>سطر فارغ</strong> — في النهاية</li>
+        </ol>
+        <p>جرّب تغيّر زر "ألوان ANSI" فوق وشوف شو بصير لما نطفي الألوان.</p>
+      </section>
+
+      <section class="lesson" id="sec-03">
+        <div class="lesson-header">
+          <span class="lesson-num">03</span>
+          <h2>الحجارة اللي بنبني منها</h2>
+        </div>
+        <p>قبل ما ندخل بالرقعة، خلّينا نفهم الأدوات الأساسية في C++ اللي بيستخدمها البرنامج. ما بدي أشرح كل شي، بس بدي تفهم اللي بنحتاجه هلّق.</p>
+
+        <h3>المكتبات والـ <span class="mono">#include</span></h3>
+        <p>تخيّل إنك بتبني بيت. محتاج أدوات قبل ما تبدأ. في C++، المكتبات هي الأدوات. <span class="mono">#include</span> معناها "ضيّف لي هالأدوات".</p>
+        <div class="code-excerpt">#include &lt;iostream&gt;  // للإخراج على الشاشة (cout)
+#include &lt;string&gt;     // للتعامل مع النصوص (string)</div>
+        <p><span class="mono">&lt;iostream&gt;</span> في فيها <span class="mono">cout</span> اللي بنطبع بيه على الشاشة. و<span class="mono">&lt;string&gt;</span> فيها نوع <span class="mono">string</span> للنصوص مثل <span class="mono">"CHESS"</span>.</p>
+
+        <h3><span class="mono">using namespace std;</span></h3>
+        <p>عشان ما نكتب <span class="mono">std::cout</span> كل مرة، بنكتب هالسطر مرة وحدة بالأول، وبعدها نكتب <span class="mono">cout</span> على طول. هلّق بتوفر وقت وكتابة.</p>
+        <div class="code-excerpt">using namespace std;</div>
+
+        <h3>الثابت <span class="mono">const int SIZE = 8;</span></h3>
+        <p>رقعة الشطرنج دائماً 8×8. فبدل ما نكرّر رقم 8 في كل مكان، بنخزّنه في ثابت اسمه <span class="mono">SIZE</span>. كلمة <span class="mono">const</span> معناها "ما في تغيير" — إذا حدا حاول يغيره، البرنامج بيعترض.</p>
+        <div class="code-excerpt">const int SIZE = 8;</div>
+        <p><strong>ليش؟</strong> عشان لو بغينا نغيّر حجم الرقعة، نغيّر رقم وحدة بس، وكل البرنامج يتحدث تلقائياً.</p>
+
+        <h3>أنواع البيانات الأساسية</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>النوع</th><th>الاسم</th><th>مثال</th><th>شو بيخزّن</th></tr>
+            <tr><td><span class="badge badge-int">int</span></td><td>عدد صحيح</td><td><code>8</code>, <code>247</code></td><td>أرقام بدون فواصل</td></tr>
+            <tr><td><span class="badge badge-char">char</span></td><td>حرف واحد</td><td><code>'R'</code>, <code>' '</code></td><td>حرف واحد بين علامات تنصيص مفردة</td></tr>
+            <tr><td><span class="badge badge-bool">bool</span></td><td>صح/خطأ</td><td><code>true</code>, <code>false</code></td><td>قيمة منطقية</td></tr>
+            <tr><td><span class="badge badge-string">string</span></td><td>نص</td><td><code>"CHESS"</code></td><td>سلسلة من الحروف</td></tr>
+          </table>
+        </div>
+
+        <h4>الفرق بين <span class="mono">'P'</span> و <span class="mono">"CHESS"</span></h4>
+        <p>انتبه لهالفرق المهم:</p>
+        <ul>
+          <li><span class="mono">'P'</span> — حرف واحد، بين علامات تنصيص مفردة <code>' '</code> — نوعه <span class="mono">char</span></li>
+          <li><span class="mono">"CHESS"</span> — نص كامل، بين علامات تنصيص مزدوجة <code>" "</code> — نوعه <span class="mono">string</span></li>
+        </ul>
+        <p>ما تخلط بينهم! <span class="mono">'P'</span> حرف واحد، و<span class="mono">"P"</span> نص فيه حرف واحد. في الذاكرة، كل وحدة بتتعامل بشكل مختلف.</p>
+
+        <h4>معنى <span class="mono">' '</span> (المسافة)</h4>
+        <p>المسافة <span class="mono">' '</span> هي حرف مثل أي حرف! يعني <span class="mono">'A'</span> حرف، و<span class="mono">' '</span> كمان حرف — بس ما بتشوفه بالعين. في البرنامج، الخانات الفاضية على الرقعة بنخزّن فيها مسافة <span class="mono">' '</span>، مو "لا شي".</p>
+
+        <h4>الحرف <span class="mono">'0'</span> مختلف عن الرقم <span class="mono">0</span></h4>
+        <p>انتبه! <span class="mono">'0'</span> (بين علامات تنصيص) هو حرف، رمزه في الكمبيوتر رقم 48. أمّا <span class="mono">0</span> (بدون علامات) هو العدد صفر. هادي مش نفس الشي!</p>
+
+        <h4><span class="mono">true</span> و <span class="mono">false</span></h4>
+        <p>النوع <span class="mono">bool</span> بس بقيمتين: <span class="mono">true</span> (صح) أو <span class="mono">false</span> (خطأ). بنستخدمه للأشياء اللي بتفتح أو بتسكر: "هل نطبع العنوان؟" <span class="mono">true</span>. "هل نطفي الألوان؟" <span class="mono">false</span>.</p>
+      </section>
+
+      <section class="lesson" id="sec-04">
+        <div class="lesson-header">
+          <span class="lesson-num">04</span>
+          <h2>كيف نمثّل الرقعة في الذاكرة؟</h2>
+        </div>
+        <p>تخيّل الرقعة زي جدول فيه صفوف وأعمدة. في C++، بنستخدم <strong>مصفوفة ثنائية الأبعاد</strong> (2D array) عشان نمثّل هاي الجدول. بتحدد الصف، وبعدين العمود، عشان توصل للخانة.</p>
+        <p>البرنامج بيستخدم أربع قطع بيانات منفصلة:</p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><span class="dot dot-teal"></span> board</div>
+            <p>مصفوفة ثنائية الأبعاد من <span class="mono">char</span>. بتخزّن حرف كل قطعة في كل خانة، أو مسافة <span class="mono">' '</span> إذا الخانة فاضية.</p>
+            <div class="code-excerpt">char board[SIZE][SIZE];</div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-indigo"></span> colors</div>
+            <p>مصفوفة ثنائية الأبعاد من <span class="mono">SquareColor</span>. بتخزّن لون كل خانة: أبيض أو أسود منطقي.</p>
+            <div class="code-excerpt">SquareColor colors[SIZE][SIZE];</div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-amber"></span> ranks</div>
+            <p>مصفوفة أحادية البُعد من <span class="mono">int</span>. بتخزّن أرقام الصفوف اللي بتظهر جنب الرقعة (8 إلى 1).</p>
+            <div class="code-excerpt">int ranks[SIZE];</div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-indigo"></span> files</div>
+            <p>مصفوفة أحادية البُعد من <span class="mono">char</span>. بتخزّن أحرف الأعمدة (a إلى h).</p>
+            <div class="code-excerpt">char files[SIZE];</div>
+          </div>
+        </div>
+
+        <div class="note note-warn">
+          <span class="note-title">انتبه!</span>
+          <span class="mono">board</span> بتخزّن القطع بس. ما بتخزّن أرقام الصفوف أو أحرف الأعمدة. هاي الأرقام والأحرف مخزّنة في <span class="mono">ranks</span> و<span class="mono">files</span> منفصلين.
+        </div>
+
+        <h3>الفهرسة من الصفر (Zero-based indexing)</h3>
+        <p>في C++، المصفوفات بتبدأ من الفهرس <span class="mono">0</span> مو من <span class="mono">1</span>. يعني أول عنصر في المصفوفة هو <span class="mono">arr[0]</span>، وآخر عنصر هو <span class="mono">arr[7]</span> (في مصفوفة حجمها 8).</p>
+
+        <h3>جرّب بنفسك — اضغط على أي خانة</h3>
+        <p>اضغط على أي خانة في الرقعة تحت، وشوف معلوماتها بالتفصيل. تقدر كمان تستخدم أسهم الكيبورد للحركة.</p>
+        <div class="flex-row">
+          <div id="inspectorBoard"></div>
+          <div class="info-panel" style="flex:1;min-width:240px">
+            <div id="inspectorInfo">
+              <p style="color:var(--fg3)">اضغط على أي خانة لرؤية تفاصيلها...</p>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          <span class="note-title">انتبه، رقم الصف جوّا المصفوفة غير الرقم اللي بنطبعه جنب الرقعة</span>
+          مثلاً: <span class="mono">board[0][0]</span> تقابل الخانة <span class="mono">a8</span> — لأن الصف <span class="mono">0</span> في المصفوفة هو الصف اللي بنطبعه برقم <span class="mono">8</span>. و<span class="mono">board[7][7]</span> تقابل <span class="mono">h1</span>.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-05">
+        <div class="lesson-header">
+          <span class="lesson-num">05</span>
+          <h2>الإعدادات: كيف بنتحكم بالرقعة؟</h2>
+        </div>
+        <p>البرنامج فيه قطعة اسمها <span class="mono">struct Config</span> — فكّر فيها زي "لوحة تحكم" فيها مجموعة أزرار ومقابض. كل واحد فيها بيتحكم بشي في الرقعة. تعالى نشوفها:</p>
+        <div class="code-excerpt">struct Config
+{
+    bool enableColors = true;
+    bool colorPieces = true;
+
+    bool showTitle = true;
+    bool showRanks = true;
+    bool showFiles = true;
+    bool showPlayerNames = true;
+    bool showLegend = true;
+
+    bool showWhitePieces = true;
+    bool showBlackPieces = true;
+
+    string title = "CHESS";
+    string whitePlayerName = "Anonymous White";
+    string blackPlayerName = "Anonymous Black";
+
+    int lightSquareColor = 247;
+    int darkSquareColor = 240;
+
+    char lightSquareSymbol = '.';
+    char darkSquareSymbol = ':';
+};</div>
+        <p>شفت كل قيمة لها <strong>قيمة افتراضية</strong> بعد علامة <span class="mono">=</span>؟ يعني لما نكتب <span class="mono">Config config;</span>، الكمبيوتر بينشئ الكائن ويعطيه هاي القيم تلقائياً. ما محتاجين نعبّيها يدوياً.</p>
+
+        <h3>شرح كل حقل</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>الحقل</th><th>النوع</th><th>الافتراضي</th><th>شو بيأثر عليه</th></tr>
+            <tr><td><code>enableColors</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>يشغّل/يطفّي كل أكواد ANSI</td></tr>
+            <tr><td><code>colorPieces</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>ألوان القطع حسب اللاعب، أو حسب الخانة</td></tr>
+            <tr><td><code>showTitle</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>إظهار العنوان "CHESS"</td></tr>
+            <tr><td><code>showRanks</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>إظهار أرقام الصفوف</td></tr>
+            <tr><td><code>showFiles</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>إظهار أحرف الأعمدة</td></tr>
+            <tr><td><code>showPlayerNames</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>إظهار أسماء اللاعبين</td></tr>
+            <tr><td><code>showLegend</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>إظهار المفتاح</td></tr>
+            <tr><td><code>showWhitePieces</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>وضع القطع البيضاء</td></tr>
+            <tr><td><code>showBlackPieces</code></td><td><span class="badge badge-bool">bool</span></td><td><code>true</code></td><td>وضع القطع السوداء</td></tr>
+            <tr><td><code>title</code></td><td><span class="badge badge-string">string</span></td><td><code>"CHESS"</code></td><td>نص العنوان</td></tr>
+            <tr><td><code>whitePlayerName</code></td><td><span class="badge badge-string">string</span></td><td><code>"Anonymous White"</code></td><td>اسم اللاعب الأبيض</td></tr>
+            <tr><td><code>blackPlayerName</code></td><td><span class="badge badge-string">string</span></td><td><code>"Anonymous Black"</code></td><td>اسم اللاعب الأسود</td></tr>
+            <tr><td><code>lightSquareColor</code></td><td><span class="badge badge-int">int</span></td><td><code>247</code></td><td>لون الخانة الفاتحة (0–255)</td></tr>
+            <tr><td><code>darkSquareColor</code></td><td><span class="badge badge-int">int</span></td><td><code>240</code></td><td>لون الخانة الغامقة (0–255)</td></tr>
+            <tr><td><code>lightSquareSymbol</code></td><td><span class="badge badge-char">char</span></td><td><code>'.'</code></td><td>رمز الخانة الفاضية الفاتحة</td></tr>
+            <tr><td><code>darkSquareSymbol</code></td><td><span class="badge badge-char">char</span></td><td><code>':'</code></td><td>رمز الخانة الفاضية الغامقة</td></tr>
+          </table>
+        </div>
+        <p>عشان نوصل لأي حقل، بنستخدم النقطة: <span class="mono">config.showRanks</span>، <span class="mono">config.title</span>، وهكذا. هلّق اسمه "الوصول للعضو" (member access).</p>
+        <div class="note">
+          <span class="note-title">ليش استخدمنا struct؟</span>
+          عشان نجمع كل الإعدادات في مكان واحد. بدل ما يكون عندنا 16 متغير مبعثرين، عندنا كائن واحد اسمه <span class="mono">config</span> فيه كل شي. سهل النقل، سهل القراءة، سهل التعديل. <strong>Config مجرد مجموعة إعدادات في الذاكرة، مش ملف على القرص</strong>.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-06">
+        <div class="lesson-header">
+          <span class="lesson-num">06</span>
+          <h2>تجهيز الرقعة: <span class="mono">prepareBoard</span></h2>
+        </div>
+        <p>هون إحنا بنجهّز البيانات، ولسّا ما طبعنا إشي. الفنكشن بتمرّ على كل خانة وتحطّ فيها مسافة <span class="mono">' '</span>، وبعدين بتعبي أرقام الصفوف وأحرف الأعمدة.</p>
+        <div class="code-excerpt">void prepareBoard(char board[SIZE][SIZE],
+                  int ranks[SIZE],
+                  char files[SIZE])
+{
+    for (int row = 0; row &lt; SIZE; row++)
+    {
+        ranks[row] = SIZE - row;
+        files[row] = 'a' + row;
+
+        for (int col = 0; col &lt; SIZE; col++)
+        {
+            board[row][col] = ' ';
+        }
+    }
+}</div>
+        <p>شفت عندنا حلقتين <span class="mono">for</span>، وحدة جوّا التانية؟ هاي اسمها <strong>حلقات متداخلة</strong> (nested loops). الخارجية بتمرّ على الصفوف، والداخلية بتمرّ على الأعمدة. الصف الخارجي ما يتقدم إلا بعد ما الصف الداخلي يخلّص كل الأعمدة الثمانية.</p>
+
+        <h3>الأرقام والأحرف</h3>
+        <p>انتبه لسطرين مهمّين:</p>
+        <div class="code-excerpt">ranks[row] = SIZE - row;      // row=0 → 8, row=1 → 7, ... row=7 → 1
+files[row] = 'a' + row;       // row=0 → 'a', row=1 → 'b', ... row=7 → 'h'</div>
+        <p>السطر الأول بيحسب رقم الصف المعروض: الصف 0 في المصفوفة هو الصف 8 في العرض. ليش؟ لأن رقعة الشطرنج بتبدأ من الأسفل، فالصف اللي فوق (index 0) هو رقم 8.</p>
+        <p>السطر الثاني بيستخدم <strong>حساب الحروف</strong>: <span class="mono">'a' + 0 = 'a'</span>، <span class="mono">'a' + 1 = 'b'</span>، <span class="mono">'a' + 2 = 'c'</span>... هاي لأن الحروف في C++ بتتعامل كأرقام (ASCII). بس انتبه: هاي بتشتغل لأن الحروف الإنجليزية متتالية في ASCII. ما نفترض إن كل ترميز بيضمن هاي الخاصية.</p>
+
+        <h3>شغّل الأنميشن</h3>
+        <p>اضغط "تشغيل" وشوف كيف الحلقات بتمرّ خانة بخانة. العلامة <span class="mono">·</span> تعليمية فقط — في البرنامج الحقيقي، الذاكرة فيها قيم عشوائية قبل التجهيز.</p>
+        <div class="flex-row">
+          <div id="prepBoard"></div>
+          <div style="flex:1;min-width:250px">
+            <div class="info-panel" id="prepInfo">
+              <div class="info-row"><span class="info-label">الخطوة:</span><span class="info-value" id="prepStep">0 / 72</span></div>
+              <div class="info-row"><span class="info-label">الصف (row):</span><span class="info-value" id="prepRow">—</span></div>
+              <div class="info-row"><span class="info-label">العمود (col):</span><span class="info-value" id="prepCol">—</span></div>
+              <div class="info-row"><span class="info-label">سطر الكود:</span><span class="info-value code" id="prepCode">—</span></div>
+              <div class="info-row"><span class="info-label">ranks[row]:</span><span class="info-value" id="prepRank">—</span></div>
+              <div class="info-row"><span class="info-label">files[row]:</span><span class="info-value" id="prepFile">—</span></div>
+            </div>
+            <div class="controls">
+              <button class="ctrl-btn" id="prepPlay">▶ تشغيل</button>
+              <button class="ctrl-btn" id="prepPause">⏸ إيقاف مؤقت</button>
+              <button class="ctrl-btn" id="prepStep2">الخطوة الجاي ←</button>
+              <button class="ctrl-btn" id="prepReset">↺ إعادة من البداية</button>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          <span class="note-title">ليش فصلناها بفنكشن لحالها؟</span>
+          عشان كل فنكشن تكون مسؤولة عن شغلة واضحة. <span class="mono">prepareBoard</span> مسؤولة فقط عن التجهيز. ما تطبع، ما تلوّن، ما تحطّ قطع. هلّق لو بغينا نغيّر طريقة التجهيز، نعدّل مكان واحد بس.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-07">
+        <div class="lesson-header">
+          <span class="lesson-num">07</span>
+          <h2>ألوان الخانات: <span class="mono">colorBoard</span></h2>
+        </div>
+        <p>رقعة الشطرنج خاناتها بتتناوب بين أبيض وأسود. بس كيف البرنامج بيعرف كل خانة أيّ لون؟ السرّ في عملية اسمها <strong>الباقي بعد القسمة</strong> — علامة <span class="mono">%</span>.</p>
+
+        <h3>الباقي بعد القسمة <span class="mono">%</span></h3>
+        <p>تخيّل إنك تقسّم 10 على 3. الناتج 3 والباقي 1. علامة <span class="mono">%</span> بتعطيك الباقي: <span class="mono">10 % 3 = 1</span>. وكذا: <span class="mono">4 % 2 = 0</span>، <span class="mono">5 % 2 = 1</span>، <span class="mono">6 % 2 = 0</span>.</p>
+        <p>لاحظ: أي عدد زوجي قسمته على 2 بيطلع باقيه <span class="mono">0</span>، وأي عدد فردي باقيه <span class="mono">1</span>. هلّق بنستخدم هاي الفكرة!</p>
+
+        <h3>تطبيقها على الرقعة</h3>
+        <div class="code-excerpt">if ((row + col) % 2 == 0)
+{
+    colors[row][col] = WHITE_SQUARE;
+}
+else
+{
+    colors[row][col] = BLACK_SQUARE;
+}</div>
+        <p>بنجمع رقم الصف ورقم العمود، ونقسم على 2. لو الباقي <span class="mono">0</span> ← خانة بيضا. لو <span class="mono">1</span> ← خانة سودا. هلّك بيخلّي الخانات بتتناوب تلقائياً!</p>
+
+        <h3>اضغط على أي خانة وشوف الحساب</h3>
+        <div class="flex-row">
+          <div id="colorBoardDemo"></div>
+          <div style="flex:1;min-width:250px">
+            <div class="info-panel" id="colorInfo">
+              <p style="color:var(--fg3)">اضغط على أي خانة لرؤية الحساب...</p>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          <span class="note-title">ليش a1 سودا؟</span>
+          الخانة <span class="mono">a1</span> تقابل <span class="mono">row=7, col=0</span> في المصفوفة. <span class="mono">(7 + 0) % 2 = 7 % 2 = 1</span> ← <span class="mono">BLACK_SQUARE</span>. وهاد صحيح: في رقعة الشطرنج، الخانة a1 دائماً سودا.
+        </div>
+        <div class="note">
+          <span class="note-title">WHITE_SQUARE و BLACK_SQUARE أسماء منطقية</span>
+          هاي أسماء نعطيها للخانة عشان نعرف لونها بعدين. اللون الفعلي اللي بيظهر على الشاشة بيتحدد بعدين من خلال إعدادات ANSI. هلّق <span class="mono">colorBoard</span> ما تطبع إشي — بس بتعبي البيانات.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-08">
+        <div class="lesson-header">
+          <span class="lesson-num">08</span>
+          <h2>وضع القطع على الرقعة</h2>
+        </div>
+        <p>هلّق الرقعة جاهزة وملوّنة، بس فاضية. لازم نحطّ القطع! البرنامج بيفصل بين القطع البيضاء والسوداء في فنكشنين منفصلين.</p>
+
+        <h3>القطع البيضاء: <span class="mono">placeWhitePieces</span></h3>
+        <div class="code-excerpt">void placeWhitePieces(char board[SIZE][SIZE])
+{
+    char pieces[SIZE] = {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'};
+
+    for (int col = 0; col &lt; SIZE; col++)
+    {
+        board[6][col] = 'P';
+        board[7][col] = pieces[col];
+    }
+}</div>
+        <p>القطع البيضاء بتروح على صفّين: البيداق على الصف <span class="mono">6</span> (اللي بيتعرض برقم 2)، والقطع الرئيسية على الصف <span class="mono">7</span> (اللي بيتعرض برقم 1).</p>
+
+        <h3>القطع السوداء: <span class="mono">placeBlackPieces</span></h3>
+        <div class="code-excerpt">void placeBlackPieces(char board[SIZE][SIZE])
+{
+    char pieces[SIZE] = {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'};
+
+    for (int col = 0; col &lt; SIZE; col++)
+    {
+        board[0][col] = pieces[col];
+        board[1][col] = 'p';
+    }
+}</div>
+        <p>القطع السوداء بتروح على الصف <span class="mono">0</span> (رقم 8) والبيداق على الصف <span class="mono">1</span> (رقم 7).</p>
+
+        <h3>ليش الحصان <span class="mono">N</span> مش <span class="mono">H</span>؟</h3>
+        <p>لأن <span class="mono">K</span> محجوزة للملك (King)! فالحصان (Knight) أخذ <span class="mono">N</span>.</p>
+
+        <h3>جدول القطع</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>الأبيض</th><th>الأسود</th><th>الاسم الإنجليزي</th><th>الاسم العربي</th></tr>
+            <tr><td><code>R</code></td><td><code>r</code></td><td>Rook</td><td>قلعة</td></tr>
+            <tr><td><code>N</code></td><td><code>n</code></td><td>Knight</td><td>حصان</td></tr>
+            <tr><td><code>B</code></td><td><code>b</code></td><td>Bishop</td><td>فيل</td></tr>
+            <tr><td><code>Q</code></td><td><code>q</code></td><td>Queen</td><td>وزير</td></tr>
+            <tr><td><code>K</code></td><td><code>k</code></td><td>King</td><td>ملك</td></tr>
+            <tr><td><code>P</code></td><td><code>p</code></td><td>Pawn</td><td>بيدق</td></tr>
+          </table>
+        </div>
+        <p><strong>القاعدة:</strong> الحروف الكبيرة (Uppercase) للقطع البيضاء، والصغيرة (Lowercase) للسوداء.</p>
+
+        <h3>جرّب بنفسك</h3>
+        <div class="flex-row">
+          <div id="pieceBoardDemo"></div>
+          <div style="flex:1;min-width:250px">
+            <div class="controls">
+              <button class="ctrl-btn" id="pieceWhiteBtn">وضع القطع البيضاء</button>
+              <button class="ctrl-btn" id="pieceBlackBtn">وضع القطع السوداء</button>
+              <button class="ctrl-btn" id="pieceResetBtn">↺ إعادة</button>
+            </div>
+            <div class="info-panel" id="pieceInfo">
+              <p style="color:var(--fg3)">اضغط زر لوضع القطع...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-09">
+        <div class="lesson-header">
+          <span class="lesson-num">09</span>
+          <h2>أسماء اللاعبين: <span class="mono">setPlayerNames</span></h2>
+        </div>
+        <p>هلّك بنفهم فكرة مهمة جداً: <strong>المرجع</strong> (Reference). انتبه معي.</p>
+        <div class="code-excerpt">void setPlayerNames(string &amp;whitePlayer,
+                    string &amp;blackPlayer,
+                    const Config &amp;config)
+{
+    whitePlayer = config.whitePlayerName;
+    blackPlayer = config.blackPlayerName;
+}</div>
+        <p>شفت علامة <span class="mono">&amp;</span> قبل اسم المتغير؟ هاي معناها "مرجع". يعني الفنكشن ما بتنسخ القيمة، بتعمل <strong>رابط</strong> للمتغير الأصلي اللي في <span class="mono">main</span>. أي تغيير تسوّيه الفنكشن، بيظهر على المتغير الأصلي.</p>
+
+        <h3>تخيّلها هيك</h3>
+        <p>فكّر إنه عندك صندوق اسمه <span class="mono">whitePlayer</span> في غرفة <span class="mono">main</span>. لو بعتّ نسخة من الصندوق لفنكشن، الفنكشن بتغيّر النسخة، والأصلي يبقى نفسه. بس لو عملت <strong>مرجع</strong>، الفنكشن بتشوف نفس الصندوق الأصلي وتغيّر فيه مباشرةً.</p>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><span class="dot dot-teal"></span> بالمرجع <span class="mono">&amp;</span></div>
+            <p>الفنكشن بتعمل رابط للمتغير الأصلي. التغيير يبقى بعد ما الفنكشن تخلّص.</p>
+            <div class="code-excerpt">void f(string &amp;s) {
+    s = "جديد";
+}
+// s الأصلية بتتغير</div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-red"></span> بالقيمة (بدون &amp;)</div>
+            <p>الفنكشن بتنسخ القيمة. التغيير يطير بعد ما الفنكشن تخلّص.</p>
+            <div class="code-excerpt">void f(string s) {
+    s = "جديد";
+}
+// s الأصلية ما تتغير</div>
+          </div>
+        </div>
+
+        <h3>ليش <span class="mono">const Config &amp;config</span>؟</h3>
+        <p>هنا عندنا <strong>مرجع ثابت</strong>. يعني الفنكشن تقدر تقرأ الإعدادات، بس ما تقدر تغيّرها. ليش بنعمل هيك؟</p>
+        <ul>
+          <li><strong>المرجع</strong> عشان ما ننسخ كائن كبير كله — نوفر وقت وذاكرة.</li>
+          <li><strong>const</strong> عشان نحمي الإعدادات من التغيير بالغلط. الفنكشن بس تقرأ، ما تعدّل.</li>
+        </ul>
+      </section>
+
+      <section class="lesson" id="sec-10">
+        <div class="lesson-header">
+          <span class="lesson-num">10</span>
+          <h2>ألوان الطرفية: شرح أكواد ANSI</h2>
+        </div>
+        <p>الطرفية (Terminal) ما عندها واجهة رسومية. بس فيها سرّ: لو بعتلها سلسلة معينة من الحروف، بتفسرها كأمر للتلوين، مش كنص عادي. هاي الأكواد اسمها <strong>ANSI escape codes</strong>.</p>
+
+        <h3>ثلاث مفاهيم منفصلة</h3>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title"><span class="dot dot-amber"></span> 1. الحرف</div>
+            <p>الحرف المخزّن في <span class="mono">board</span> — مثل <span class="mono">'R'</span> أو <span class="mono">' '</span>.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-indigo"></span> 2. لون الخلفية</div>
+            <p>لون الخانة نفسها — بيتحدد من <span class="mono">setSquareBackground</span>.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-teal"></span> 3. لون النص</div>
+            <p>لون الحرف — بيتحدد من <span class="mono">setPieceColor</span>.</p>
+          </div>
+        </div>
+
+        <h3>تفكيك الكود</h3>
+        <p>خلّينا نفكك كل جزء من كود ANSI:</p>
+        <div class="code-excerpt">cout &lt;&lt; "\033[48;5;" &lt;&lt; background &lt;&lt; "m";</div>
+
+        <div class="ansi-breakdown"><span class="ansi-part ansi-esc">\033</span><span class="ansi-part ansi-cmd">[48;5;</span><span class="ansi-part ansi-val">247</span><span class="ansi-part ansi-end">m</span></div>
+
+        <ul>
+          <li><span class="ansi-part ansi-esc">\033</span> — <strong>حرف الهروب</strong> (Escape). بعث رسالة للطرفية: "عندك أمر خاص، مش نص". مكتوب بصيغة ثمانية (octal).</li>
+          <li><span class="ansi-part ansi-cmd">[48;5;</span> — <strong>48</strong> معناها "غيّر لون الخلفية"، <strong>;5;</strong> معناها "استخدم نظام 256 لون".</li>
+          <li><span class="ansi-part ansi-val">247</span> — <strong>رقم اللون</strong> من 0 إلى 255. هلّق 247 = رمادي فاتح.</li>
+          <li><span class="ansi-part ansi-end">m</span> — <strong>نهاية الأمر</strong>. بيقول للطرفية "انتهى كود التحكم".</li>
+        </ul>
+
+        <h3>أكواد النص (Foreground)</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>الكود</th><th>المعنى</th><th>اللون</th></tr>
+            <tr><td><code>\033[97m</code></td><td>نص أبيض فاتح</td><td><span style="background:#000;color:#fff;padding:.1rem .4rem;border-radius:3px">أبيض</span></td></tr>
+            <tr><td><code>\033[30m</code></td><td>نص أسود</td><td><span style="background:#fff;color:#000;padding:.1rem .4rem;border-radius:3px">أسود</span></td></tr>
+            <tr><td><code>\033[0m</code></td><td>إعادة الضبط</td><td>يرجّع كل شي للطبيعة</td></tr>
+          </table>
+        </div>
+
+        <h3>جرّب لوحة الألوان بنفسك</h3>
+        <p>حرّك السلايدر وشوف كيف اللون بيتغيّر:</p>
+        <div class="flex-row">
+          <div>
+            <div id="ansiSwatch" style="width:120px;height:120px;border-radius:var(--radius);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:2rem;font-weight:bold"></div>
+          </div>
+          <div style="flex:1;min-width:250px">
+            <label for="ansiSlider" style="display:block;margin-bottom:.5rem">قيمة اللون: <span class="mono" id="ansiValLabel">247</span></label>
+            <input type="range" id="ansiSlider" min="0" max="255" value="247" style="width:100%">
+            <div class="info-panel" style="margin-top:1rem">
+              <div class="info-row"><span class="info-label">الرقم:</span><span class="info-value" id="ansiNum">247</span></div>
+              <div class="info-row"><span class="info-label">RGB:</span><span class="info-value" id="ansiRgb">158,158,158</span></div>
+              <div class="info-row"><span class="info-label">Hex:</span><span class="info-value" id="ansiHex">#9e9e9e</span></div>
+              <div class="info-row"><span class="info-label">كود ANSI:</span><span class="info-value code" id="ansiCode">\033[48;5;247m</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">
+          <span class="note-title">ليش رمادي، مو أبيض وأسود نقي؟</span>
+          لو خليت الخلفية بيضا نقية (255) والنص أبيض (97) — ما بتشوف النص! ولو خليت الخلفية سودا نقية (0) والنص أسود (30) — كمان ما بتشوفه. الرمادي بيخلّي القطع البيضا والسودا كلاهم شوفها. بس انتبه: لو غيّرت الألوان لقيم سيئة، التباين ممكن يخرب.
+        </div>
+
+        <h3>إعادة الضبط <span class="mono">\033[0m</span></h3>
+        <p>هلّق لازم نرجّع الطرفية لحالتها الطبيعية بعد كل خانة. لو ما عملنا reset، اللون بيكمل للنص اللي بعده!</p>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> مقارنة افتراضية (البرنامج الحقيقي بيعمل reset)</div>
+          <div class="console-preview" style="margin-top:.5rem"><span style="background:#9e9e9e;color:#fff">&nbsp;r&nbsp;</span><span style="background:#585858;color:#fff">&nbsp;n&nbsp;</span>اسم اللاعب الأسود <span style="color:var(--fg3)">← التلوين كمل لأن ما في reset</span></div>
+          <div class="console-preview" style="margin-top:.5rem"><span style="background:#9e9e9e;color:#fff">&nbsp;r&nbsp;</span><span style="background:#585858;color:#000">&nbsp;n&nbsp;</span><span style="color:#d4d4d4"> اسم اللاعب الأسود</span> <span style="color:var(--fg3)">← بعد reset، رجع طبيعي</span></div>
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-11">
+        <div class="lesson-header">
+          <span class="lesson-num">11</span>
+          <h2>لون النص: <span class="mono">setPieceColor</span> و <span class="mono">isWhitePiece</span></h2>
+        </div>
+        <p>هلّك عندنا فنكشن صغيرة بس مهمة: <span class="mono">isWhitePiece</span>. بتشوف إذا الحرف كبير (A–Z) أو صغير (a–z).</p>
+        <div class="code-excerpt">bool isWhitePiece(char piece)
+{
+    return piece &gt;= 'A' &amp;&amp; piece &lt;= 'Z';
+}</div>
+        <p><span class="mono">&amp;&amp;</span> معناها "و" (AND). يعني: الحرف لازم يكون <span class="mono">&gt;= 'A'</span> <strong>وفي نفس الوقت</strong> <span class="mono">&lt;= 'Z'</span>. لو الشرطين صح، يرجع <span class="mono">true</span>.</p>
+        <div class="note">
+          <span class="note-title">انتبه</span>
+          <span class="mono">isWhitePiece</span> بتشوف بس إذا الحرف كبير. ما بتتحقق إذا كان حرف قطعة شطرنج صحيح. يعني لو أعطيتها <span class="mono">'X'</span>، بترجع <span class="mono">true</span>!
+        </div>
+
+        <h3>اختبر بنفسك</h3>
+        <div class="char-tester">
+          <label for="charInput">أدخل حرف:</label>
+          <input type="text" id="charInput" maxlength="1" value="P" class="text-input" style="width:60px;font-size:1.2rem;text-align:center">
+          <div>النتيجة: <span class="char-tester-result true" id="charResult">true — قطعة بيضاء</span></div>
+        </div>
+
+        <h3><span class="mono">setPieceColor</span></h3>
+        <div class="code-excerpt">void setPieceColor(char piece, SquareColor color, const Config &amp;config)
+{
+    bool whiteText;
+
+    if (config.colorPieces)
+    {
+        whiteText = isWhitePiece(piece);
+    }
+    else
+    {
+        whiteText = (color == BLACK_SQUARE);
+    }
+
+    if (whiteText)
+    {
+        cout &lt;&lt; "\033[97m";  // نص أبيض
+    }
+    else
+    {
+        cout &lt;&lt; "\033[30m";  // نص أسود
+    }
+}</div>
+
+        <p>عندنا حالتين:</p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><span class="dot dot-indigo"></span> <span class="mono">colorPieces = true</span></div>
+            <p>القطع البيضاء (كبيرة) ← نص أبيض.<br>القطع السوداء (صغيرة) ← نص أسود.</p>
+            <p>اللون بيعتمد على <strong>اللاعب</strong>.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-teal"></span> <span class="mono">colorPieces = false</span></div>
+            <p>الخانة البيضا ← نص أسود.<br>الخانة السودا ← نص أبيض.</p>
+            <p>اللون بيعتمد على <strong>الخانة</strong>.</p>
+          </div>
+        </div>
+        <div class="note">
+          <span class="note-title">ملاحظة</span>
+          لو <span class="mono">enableColors = false</span>، فنكشن <span class="mono">printSquare</span> ما بستدعي أصلاً فنكشنات التلوين. يعني <span class="mono">colorPieces</span> ما إلها تأثير لو الألوان مطفية.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-12">
+        <div class="lesson-header">
+          <span class="lesson-num">12</span>
+          <h2>الرمز المعروض: <span class="mono">getSquareSymbol</span></h2>
+        </div>
+        <p>هلّك عندنا قرار مهم: شو الحرف اللي بنطبعه في كل خانة؟ الفنكشن بترجع حرف، ما بطبعه بنفسها.</p>
+        <div class="code-excerpt">char getSquareSymbol(char piece, SquareColor color, const Config &amp;config)
+{
+    if (piece != ' ' || config.enableColors)
+    {
+        return piece;
+    }
+
+    if (color == WHITE_SQUARE)
+    {
+        return config.lightSquareSymbol;
+    }
+
+    return config.darkSquareSymbol;
+}</div>
+
+        <h3>مخطط القرار</h3>
+        <p>عندنا شرط واحد أساسي: <span class="mono">piece != ' ' || config.enableColors</span>. علامة <span class="mono">||</span> معناها "أو" (OR). يعني: <strong>لو في قطعة، أو لو الألوان مشغّلة</strong> ← رجّع الحرف نفسه.</p>
+
+        <div class="decision-tree" id="decisionTree">
+          <div class="decision-node" id="dec-check">
+            <strong>الشرط:</strong> <code>piece != ' ' || config.enableColors</code>
+          </div>
+          <div class="decision-node branch branch-yes" id="dec-yes" style="margin-right:2rem">
+            <strong>صح ✓</strong> ← رجّع <code>piece</code> (الحرف نفسه)
+          </div>
+          <div class="decision-node branch branch-no" id="dec-no" style="margin-right:2rem">
+            <strong>خطأ ✗</strong> ← يعني الخانة فاضية <strong>و</strong> الألوان مطفية
+          </div>
+          <div class="decision-node branch" id="dec-white" style="margin-right:4rem">
+            لو <code>color == WHITE_SQUARE</code> ← رجّع <code>config.lightSquareSymbol</code> (افتراضي: <code>'.'</code>)
+          </div>
+          <div class="decision-node branch" id="dec-black" style="margin-right:4rem">
+            غير هيك ← رجّع <code>config.darkSquareSymbol</code> (افتراضي: <code>':'</code>)
+          </div>
+        </div>
+
+        <h3>جرّب الحالات</h3>
+        <div class="flex-row">
+          <div style="min-width:200px">
+            <div class="field" style="flex-direction:column;align-items:flex-start">
+              <label>القطعة (piece):</label>
+              <select id="symPiece" class="text-input" style="width:80px">
+                <option value="R">R</option>
+                <option value="r">r</option>
+                <option value=" "> (مسافة)</option>
+              </select>
+            </div>
+            <div class="field" style="flex-direction:column;align-items:flex-start">
+              <label>لون الخانة:</label>
+              <select id="symColor" class="text-input" style="width:130px">
+                <option value="WHITE">WHITE_SQUARE</option>
+                <option value="BLACK">BLACK_SQUARE</option>
+              </select>
+            </div>
+            <div class="field" style="flex-direction:column;align-items:flex-start">
+              <label>enableColors:</label>
+              <select id="symEnable" class="text-input" style="width:100px">
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+          <div class="info-panel" style="flex:1;min-width:220px">
+            <div class="info-row"><span class="info-label">النتيجة:</span><span class="info-value" id="symResult" style="font-size:1.5rem;font-weight:bold">R</span></div>
+            <div class="info-row"><span class="info-label">الشرط:</span><span class="info-value code" id="symCondition">piece != ' ' = true</span></div>
+            <div class="info-row"><span class="info-label">القرار:</span><span class="info-value" id="symDecision">رجّع piece</span></div>
+          </div>
+        </div>
+
+        <h3>جدول الحالات</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>الحالة</th><th>piece</th><th>color</th><th>enableColors</th><th>النتيجة</th></tr>
+            <tr><td>قطعة + ألوان</td><td><code>R</code></td><td>WHITE</td><td><code>true</code></td><td><code>R</code></td></tr>
+            <tr><td>قطعة + بدون ألوان</td><td><code>R</code></td><td>WHITE</td><td><code>false</code></td><td><code>R</code></td></tr>
+            <tr><td>فاضي + ألوان</td><td><code>' '</code></td><td>WHITE</td><td><code>true</code></td><td><code>' '</code></td></tr>
+            <tr><td>فاضي أبيض + بدون ألوان</td><td><code>' '</code></td><td>WHITE</td><td><code>false</code></td><td><code>.</code></td></tr>
+            <tr><td>فاضي أسود + بدون ألوان</td><td><code>' '</code></td><td>BLACK</td><td><code>false</code></td><td><code>:</code></td></tr>
+          </table>
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-13">
+        <div class="lesson-header">
+          <span class="lesson-num">13</span>
+          <h2>كيف بتتجمّع المخرجات؟</h2>
+        </div>
+        <p>هلّك بنشوف كيف ثلاث فنكشنات بيتعاونوا عشان يرسموا الرقعة: <span class="mono">printBoard</span> بتنادي <span class="mono">printRow</span> ثماني مرات، وكل <span class="mono">printRow</span> بتنادي <span class="mono">printSquare</span> ثماني مرات.</p>
+
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title"><span class="dot dot-indigo"></span> printBoard</div>
+            <p>بتدور على 8 صفوف. لكل صف، بتنادي <span class="mono">printRow</span>.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-teal"></span> printRow</div>
+            <p>بتطبع رقم الصف (لو مفعل)، بعدين بتنادي <span class="mono">printSquare</span> 8 مرات.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot dot-amber"></span> printSquare</div>
+            <p>بتلوّن وبتطبع خانة وحدة: <span class="mono">&nbsp;X&nbsp;</span> — مسافة، حرف، مسافة.</p>
+          </div>
+        </div>
+
+        <div class="code-excerpt">void printSquare(...) {
+    ...
+    cout &lt;&lt; " " &lt;&lt; getSquareSymbol(...) &lt;&lt; " ";
+    ...
+}</div>
+        <p>ليش مسافة قبل وبعد الحرف؟ عشان كل خانة تاخد 3 حروف عرض: <span class="mono">&nbsp;X&nbsp;</span>. هلّك بيخلّي الرقعة منتظمة وواضحة.</p>
+
+        <h3>شغّل بناء المخرجات</h3>
+        <div class="flex-row">
+          <div id="outputBuilder"></div>
+          <div style="flex:1;min-width:250px">
+            <div class="info-panel">
+              <div class="info-row"><span class="info-label">الفنكشن:</span><span class="info-value" id="obFn">printBoard</span></div>
+              <div class="info-row"><span class="info-label">الصف:</span><span class="info-value" id="obRow">—</span></div>
+              <div class="info-row"><span class="info-label">العمود:</span><span class="info-value" id="obCol">—</span></div>
+              <div class="info-row"><span class="info-label">بيطبع:</span><span class="info-value code" id="obPrint">—</span></div>
+            </div>
+            <div class="controls">
+              <button class="ctrl-btn" id="obPlay">▶ تشغيل</button>
+              <button class="ctrl-btn" id="obPause">⏸ إيقاف</button>
+              <button class="ctrl-btn" id="obStep">خطوة ←</button>
+              <button class="ctrl-btn" id="obReset">↺ إعادة</button>
+            </div>
+          </div>
+        </div>
+
+        <h3>الإزاحة (Indent)</h3>
+        <p><span class="mono">printIndent</span> بتطبع مسافات عشان توازن النص مع الرقعة. لو <span class="mono">showRanks</span> true، بتطبع 4 مسافات (نفس عرض <span class="mono">&nbsp;8&nbsp;&nbsp;</span>). لو false، بس مسافتين.</p>
+        <div class="code-excerpt">if (config.showRanks) {
+    cout &lt;&lt; "    ";  // 4 مسافات
+} else {
+    cout &lt;&lt; "  ";    // مسافتين
+}</div>
+        <div class="note">
+          <span class="note-title">أرقام الصفوف على اليسار بس</span>
+          البرنامج بيطبع رقم الصف على اليسار بس. ما فيه أرقام على اليمين. وأحرف الأعمدة بتظهر تحت الرقعة، مش فوقها.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-14">
+        <div class="lesson-header">
+          <span class="lesson-num">14</span>
+          <h2>التسميات والوسوم</h2>
+        </div>
+        <p>بعد الرقعة، البرنامج بيطبع أشياء إضافية: الأحرف، العنوان، أسماء اللاعبين، والمفتاح. خلّينا نشوفهم بسرعة.</p>
+
+        <h3><span class="mono">printFiles</span></h3>
+        <p>بيطبع أحرف الأعمدة تحت الرقعة: <span class="mono">a b c d e f g h</span>. لو <span class="mono">showFiles = false</span>، ما يطبع إشي. انتبه إنه بيستخدم <span class="mono">return</span> بدري عشان يطلع من الفنكشن:</p>
+        <div class="code-excerpt">if (!config.showFiles) {
+    return;  // اخرج بدري، ما تطبع شي
+}</div>
+
+        <h3><span class="mono">printTitle</span></h3>
+        <p>بيطبع العنوان مع إزاحة، وبعديه سطرين فارغين: <span class="mono">\n\n</span>.</p>
+
+        <h3><span class="mono">printPlayer</span></h3>
+        <p>بيطبع اسم اللاعب وجنبه الفريق بين قوسين: <span class="mono">Anonymous White (White)</span>.</p>
+
+        <h3><span class="mono">printLegend</span></h3>
+        <p>بيطبع 3 سطور تشرح معنى الحروف:</p>
+        <div class="console-preview" dir="ltr">Uppercase: White | Lowercase: Black
+K/k: King    Q/q: Queen   R/r: Rook
+B/b: Bishop  N/n: Knight  P/p: Pawn</div>
+
+        <h3>تسلسل النداءات في <span class="mono">main</span></h3>
+        <p>هلّك الترتيب مهم جداً. كل سطر بيتطبع بالترتيب اللي كتبناه فيه:</p>
+        <ol>
+          <li><span class="mono">cout &lt;&lt; '\n';</span> — سطر فارغ</li>
+          <li><span class="mono">printTitle</span> — العنوان</li>
+          <li><span class="mono">printPlayer(blackPlayer, "Black", ...)</span> — اللاعب الأسود</li>
+          <li><span class="mono">printBoard</span> — الرقعة</li>
+          <li><span class="mono">printFiles</span> — الأحرف</li>
+          <li><span class="mono">cout &lt;&lt; '\n';</span> — سطر فارغ</li>
+          <li><span class="mono">printPlayer(whitePlayer, "White", ...)</span> — اللاعب الأبيض</li>
+          <li><span class="mono">printLegend</span> — المفتاح</li>
+          <li><span class="mono">cout &lt;&lt; '\n';</span> — سطر فارغ أخير</li>
+        </ol>
+      </section>
+
+      <section class="lesson" id="sec-15">
+        <div class="lesson-header">
+          <span class="lesson-num">15</span>
+          <h2>تسلسل <span class="mono">main()</span>: من البداية للنهاية</h2>
+        </div>
+        <p>تخيّل <span class="mono">main</span> زي شخص بيدبّر شغله: بيجمع الأدوات، بيمرّر المهام للمساعدين، وبيراقب الترتيب. خلّينا نمشي معه خطوة خطوة.</p>
+        <p><strong>تعريف الفنكشن ما يعني تنفيذها</strong>. البرنامج بينفّذ فنكشن لما يوصل لنداءها. التعريفات اللي فوق <span class="mono">main</span> بتقول للكمبيوتر "هاي الفنكشنات موجودة"، بس ما بتشتغل إلا لما <span class="mono">main</span> يناديها.</p>
+
+        <div class="flex-row">
+          <div style="min-width:280px;max-width:350px">
+            <div class="timeline" id="timeline"></div>
+          </div>
+          <div style="flex:1;min-width:280px">
+            <div class="info-panel" id="timelineInfo">
+              <p style="color:var(--fg3)">اضغط على أي خطوة لرؤية التفاصيل...</p>
+            </div>
+            <div class="controls">
+              <button class="ctrl-btn" id="tlPrev">→ السابق</button>
+              <button class="ctrl-btn" id="tlNext">التالي ←</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-16">
+        <div class="lesson-header">
+          <span class="lesson-num">16</span>
+          <h2>ملعب الإعدادات: جرّب بنفسك!</h2>
+        </div>
+        <p>هلّق وقت المرح! غيّر أي إعداد وشوف شو بصير على الرقعة فوراً. <strong>هادي محاكاة في المتصفح لتعليمك فقط — البرنامج الأصلي ما فيه واجهة تفاعلية</strong>.</p>
+        <div class="playground">
+          <div class="playground-controls">
+            <div class="field-group">
+              <div class="field-group-title">الألوان</div>
+              <div class="field">
+                <label for="pg_enableColors">enableColors</label>
+                <span class="field-type">bool</span>
+                <label class="toggle"><input type="checkbox" id="pg_enableColors" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="field">
+                <label for="pg_colorPieces">colorPieces</label>
+                <span class="field-type">bool</span>
+                <label class="toggle"><input type="checkbox" id="pg_colorPieces" checked><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+            <div class="field-group">
+              <div class="field-group-title">الإظهار</div>
+              <div class="field"><label for="pg_showTitle">showTitle</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showTitle" checked><span class="toggle-slider"></span></label></div>
+              <div class="field"><label for="pg_showRanks">showRanks</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showRanks" checked><span class="toggle-slider"></span></label></div>
+              <div class="field"><label for="pg_showFiles">showFiles</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showFiles" checked><span class="toggle-slider"></span></label></div>
+              <div class="field"><label for="pg_showPlayerNames">showPlayerNames</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showPlayerNames" checked><span class="toggle-slider"></span></label></div>
+              <div class="field"><label for="pg_showLegend">showLegend</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showLegend" checked><span class="toggle-slider"></span></label></div>
+              <div class="field"><label for="pg_showWhitePieces">showWhitePieces</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showWhitePieces" checked><span class="toggle-slider"></span></label></div>
+              <div class="field"><label for="pg_showBlackPieces">showBlackPieces</label><span class="field-type">bool</span><label class="toggle"><input type="checkbox" id="pg_showBlackPieces" checked><span class="toggle-slider"></span></label></div>
+            </div>
+            <div class="field-group">
+              <div class="field-group-title">النصوص</div>
+              <div class="field"><label for="pg_title">title</label><span class="field-type">string</span><input type="text" id="pg_title" value="CHESS" class="text-input" dir="ltr"></div>
+              <div class="field"><label for="pg_whitePlayerName">whitePlayerName</label><span class="field-type">string</span><input type="text" id="pg_whitePlayerName" value="Anonymous White" class="text-input" dir="ltr"></div>
+              <div class="field"><label for="pg_blackPlayerName">blackPlayerName</label><span class="field-type">string</span><input type="text" id="pg_blackPlayerName" value="Anonymous Black" class="text-input" dir="ltr"></div>
+            </div>
+            <div class="field-group">
+              <div class="field-group-title">ألوان الخلفية (0–255)</div>
+              <div class="field"><label for="pg_lightSquareColor">lightSquareColor</label><span class="field-type">int</span><input type="number" id="pg_lightSquareColor" value="247" min="0" max="255" class="num-input" dir="ltr"></div>
+              <div class="field"><label for="pg_darkSquareColor">darkSquareColor</label><span class="field-type">int</span><input type="number" id="pg_darkSquareColor" value="240" min="0" max="255" class="num-input" dir="ltr"></div>
+            </div>
+            <div class="field-group">
+              <div class="field-group-title">رموز الخانات الفاضية</div>
+              <div class="field"><label for="pg_lightSquareSymbol">lightSquareSymbol</label><span class="field-type">char</span><input type="text" id="pg_lightSquareSymbol" value="." maxlength="1" class="char-input" dir="ltr"></div>
+              <div class="field"><label for="pg_darkSquareSymbol">darkSquareSymbol</label><span class="field-type">char</span><input type="text" id="pg_darkSquareSymbol" value=":" maxlength="1" class="char-input" dir="ltr"></div>
+            </div>
+            <button class="btn btn-ghost" id="pgReset" style="width:100%;justify-content:center">↺ رجّع الإعدادات الأصلية</button>
+          </div>
+          <div class="playground-preview">
+            <div class="console-preview-toolbar">
+              <span class="title">معاينة حية</span>
+            </div>
+            <div class="console-preview-wrap">
+              <pre class="console-preview" id="pgPreview" dir="ltr"></pre>
+            </div>
+            <div class="playground-code" id="pgCode"></div>
+          </div>
+        </div>
+        <div class="note">
+          <span class="note-title">جرّب هاي التجارب</span>
+          • اطفي <span class="mono">showWhitePieces</span> — القطع البيضاء ما بتتحط أصلاً (مو بس بتختفي).<br>
+          • اطفي <span class="mono">enableColors</span> — بتظهر رموز <span class="mono">.</span> و <span class="mono">:</span> بدل الفراغات.<br>
+          • اطفي <span class="mono">colorPieces</span> — لون النص بيعتمد على الخانة مو على اللاعب.
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-17">
+        <div class="lesson-header">
+          <span class="lesson-num">17</span>
+          <h2>سوء فهم شائع</h2>
+        </div>
+        <p>خلّينا نصحّح أخطاء كثير بيقع فيها المبتدئين:</p>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "الفهرس يبدأ من 1"</div>
+          <p>لا! في C++ المصفوفات بتبدأ من <span class="mono">0</span>. <span class="mono">board[0][0]</span> هو أول خانة، و<span class="mono">board[7][7]</span> هو آخر خانة. بس الأرقام اللي بنطبعها جنب الرقعة (ranks) بتبدأ من 8 وتنزل لـ 1.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "الصف 0 هو الصف 1"</div>
+          <p>لا! الصف <span class="mono">0</span> في المصفوفة هو اللي بيتعرض برقم <span class="mono">8</span> (لأن <span class="mono">ranks[0] = 8 - 0 = 8</span>). الصف <span class="mono">7</span> هو اللي بيتعرض برقم <span class="mono">1</span>.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "WHITE_SQUARE يعني قطعة بيضاء"</div>
+          <p>لا! <span class="mono">WHITE_SQUARE</span> بيوصف <strong>الخانة</strong>، مو القطعة. الخانة البيضا ممكن فيها قطعة سودا، والعكس.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "colorPieces = false بيشيل القطع"</div>
+          <p>لا! بغيّر بس <strong>لون النص</strong>. القطع تضل مكانها. لو بدك تشيل القطع، اطفي <span class="mono">showWhitePieces</span> أو <span class="mono">showBlackPieces</span>.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "enableColors = false بيمسح القطع"</div>
+          <p>لا! بيطفي بس التلوين. القطع تضل موجودة، بس الخانات الفاضية بتظهر برموز <span class="mono">.</span> و <span class="mono">:</span> بدل ما تكون ملونة.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "اطفاء showWhitePieces بيخفي القطع بس"</div>
+          <p>لا! الفنكشن <span class="mono">placeWhitePieces</span> ما بتنادي أصلاً. يعني القطع ما بتتحط في الذاكرة. مو بس مخبية — مش موجودة.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "getSquareSymbol بتطبع الحرف"</div>
+          <p>لا! بترجع الحرف بس. اللي بطبعه هو <span class="mono">printSquare</span> لما ياخد النتيجة ويبعتها لـ <span class="mono">cout</span>.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "colorBoard بتطبع ألوان"</div>
+          <p>لا! بتعبي مصفوفة <span class="mono">colors</span> بقيم منطقية (WHITE_SQUARE / BLACK_SQUARE). التلوين الفعلي بيصير بعدين في <span class="mono">printSquare</span>.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "setSquareBackground بيغيّر colors"</div>
+          <p>لا! بيبعت كود ANSI للطرفية بس. ما بلمس مصفوفة <span class="mono">colors</span>. هي بتقرأ من <span class="mono">config</span> وتطبع.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "هاي لعبة شطرنج كاملة"</div>
+          <p>لا! ما فيه تحريك، ما فيه أدوار، ما فيه checkmate. البرنامج بجهّز وبيطبع رقعة البداية فقط.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "Config ملف على القرص"</div>
+          <p>لا! <span class="mono">Config</span> مجرد <span class="mono">struct</span> في الذاكرة. ما فيه قراءة من ملف. القيم الافتراضية مكتوبة في الكود.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span> "هالصفحة بتشغل C++"</div>
+          <p>لا! هاي محاكاة بـ JavaScript عشان تعلمك. الكود الأصلي C++ بيشتغل في طرفية حقيقية. إحنا بنحاكي سلوكه للتعليم.</p>
+        </div>
+      </section>
+
+      <section class="lesson" id="sec-18">
+        <div class="lesson-header">
+          <span class="lesson-num">18</span>
+          <h2>الكود الكامل</h2>
+        </div>
+        <p>هلّق الكود كامل، محفوظ زي ما هو. تقدر تنسخه أو تنزّله.</p>
+        <div class="controls">
+          <button class="btn btn-secondary" id="copySourceBtn">📋 نسخ الكود</button>
+          <button class="btn btn-primary" id="sectionDownloadBtn">↓ تنزيل الكود</button>
+        </div>
+        <div class="source-viewer">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="lang">C++</span>
+              <button class="copy-btn" id="copySourceBtn2">نسخ</button>
+            </div>
+            <pre dir="ltr"><code id="sourceDisplay"></code></pre>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <p>شرح تفاعلي لبرنامج C++ — رقعة الشطرنج · صُمم للتعلم خطوة خطوة</p>
+</footer>
+
+<script type="text/plain" id="cpp-source">#include <iostream>
+#include <string>
+using namespace std;
+
+/*
+    Console Chess Board
+    -------------------
+    White pieces use uppercase letters.
+    Black pieces use lowercase letters.
+
+    Colors require an ANSI-compatible terminal.
+    Gray squares keep white and black letters visible.
+*/
+
+const int SIZE = 8;
+
+enum SquareColor
+{
+    WHITE_SQUARE,
+    BLACK_SQUARE
+};
+
+/*
+    Edit these settings to customize the board.
+
+    enableColors disables all ANSI codes when false.
+    colorPieces uses player colors when true.
+    Otherwise, text color depends on the square.
+
+    Background colors use ANSI palette values from 0 to 255.
+    Without colors, empty squares use the symbols below.
+*/
+struct Config
+{
+    bool enableColors = true;
+    bool colorPieces = true;
+
+    bool showTitle = true;
+    bool showRanks = true;
+    bool showFiles = true;
+    bool showPlayerNames = true;
+    bool showLegend = true;
+
+    bool showWhitePieces = true;
+    bool showBlackPieces = true;
+
+    string title = "CHESS";
+    string whitePlayerName = "Anonymous White";
+    string blackPlayerName = "Anonymous Black";
+
+    int lightSquareColor = 247;
+    int darkSquareColor = 240;
+
+    char lightSquareSymbol = '.';
+    char darkSquareSymbol = ':';
+};
+
+/*
+    Prepare empty squares and coordinate labels.
+    The top row represents rank 8.
+*/
+void prepareBoard(char board[SIZE][SIZE],
+                  int ranks[SIZE],
+                  char files[SIZE])
+{
+    for (int row = 0; row < SIZE; row++)
+    {
+        ranks[row] = SIZE - row;
+        files[row] = 'a' + row;
+
+        for (int col = 0; col < SIZE; col++)
+        {
+            board[row][col] = ' ';
+        }
+    }
+}
+
+/*
+    Assign alternating square colors.
+    The bottom-left square, a1, is black.
+*/
+void colorBoard(SquareColor colors[SIZE][SIZE])
+{
+    for (int row = 0; row < SIZE; row++)
+    {
+        for (int col = 0; col < SIZE; col++)
+        {
+            if ((row + col) % 2 == 0)
+            {
+                colors[row][col] = WHITE_SQUARE;
+            }
+            else
+            {
+                colors[row][col] = BLACK_SQUARE;
+            }
+        }
+    }
+}
+
+/*
+    Place white pieces on ranks 1 and 2.
+*/
+void placeWhitePieces(char board[SIZE][SIZE])
+{
+    char pieces[SIZE] = {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'};
+
+    for (int col = 0; col < SIZE; col++)
+    {
+        board[6][col] = 'P';
+        board[7][col] = pieces[col];
+    }
+}
+
+/*
+    Place black pieces on ranks 8 and 7.
+*/
+void placeBlackPieces(char board[SIZE][SIZE])
+{
+    char pieces[SIZE] = {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'};
+
+    for (int col = 0; col < SIZE; col++)
+    {
+        board[0][col] = pieces[col];
+        board[1][col] = 'p';
+    }
+}
+
+/*
+    Assign player names from the configuration.
+*/
+void setPlayerNames(string &whitePlayer,
+                    string &blackPlayer,
+                    const Config &config)
+{
+    whitePlayer = config.whitePlayerName;
+    blackPlayer = config.blackPlayerName;
+}
+
+/*
+    Check whether a piece belongs to white.
+*/
+bool isWhitePiece(char piece)
+{
+    return piece >= 'A' && piece <= 'Z';
+}
+
+/*
+    Apply the background color for one square.
+*/
+void setSquareBackground(SquareColor color, const Config &config)
+{
+    int background = config.darkSquareColor;
+
+    if (color == WHITE_SQUARE)
+    {
+        background = config.lightSquareColor;
+    }
+
+    cout << "\033[48;5;" << background << "m";
+}
+
+/*
+    Use white text for white pieces and black text for black pieces.
+    When piece coloring is disabled, use the square's contrast color.
+*/
+void setPieceColor(char piece,
+                   SquareColor color,
+                   const Config &config)
+{
+    bool whiteText;
+
+    if (config.colorPieces)
+    {
+        whiteText = isWhitePiece(piece);
+    }
+    else
+    {
+        whiteText = (color == BLACK_SQUARE);
+    }
+
+    if (whiteText)
+    {
+        cout << "\033[97m";
+    }
+    else
+    {
+        cout << "\033[30m";
+    }
+}
+
+/*
+    Choose the displayed character.
+    Symbols distinguish empty squares when colors are disabled.
+*/
+char getSquareSymbol(char piece,
+                     SquareColor color,
+                     const Config &config)
+{
+    if (piece != ' ' || config.enableColors)
+    {
+        return piece;
+    }
+
+    if (color == WHITE_SQUARE)
+    {
+        return config.lightSquareSymbol;
+    }
+
+    return config.darkSquareSymbol;
+}
+
+/*
+    Print a single square, then reset terminal colors.
+*/
+void printSquare(char piece,
+                 SquareColor color,
+                 const Config &config)
+{
+    if (config.enableColors)
+    {
+        setSquareBackground(color, config);
+        setPieceColor(piece, color, config);
+    }
+
+    cout << " " << getSquareSymbol(piece, color, config) << " ";
+
+    if (config.enableColors)
+    {
+        cout << "\033[0m";
+    }
+}
+
+/*
+    Align labels with the board's left edge.
+*/
+void printIndent(const Config &config)
+{
+    if (config.showRanks)
+    {
+        cout << "    ";
+    }
+    else
+    {
+        cout << "  ";
+    }
+}
+
+/*
+    Print one row with an optional rank on the left only.
+*/
+void printRow(const char board[SIZE][SIZE],
+              const SquareColor colors[SIZE][SIZE],
+              int row,
+              int rank,
+              const Config &config)
+{
+    if (config.showRanks)
+    {
+        cout << " " << rank << "  ";
+    }
+    else
+    {
+        printIndent(config);
+    }
+
+    for (int col = 0; col < SIZE; col++)
+    {
+        printSquare(board[row][col], colors[row][col], config);
+    }
+
+    cout << '\n';
+}
+
+/*
+    Print the board one row at a time.
+*/
+void printBoard(const char board[SIZE][SIZE],
+                const SquareColor colors[SIZE][SIZE],
+                const int ranks[SIZE],
+                const Config &config)
+{
+    for (int row = 0; row < SIZE; row++)
+    {
+        printRow(board, colors, row, ranks[row], config);
+    }
+}
+
+/*
+    Print file letters below the board.
+*/
+void printFiles(const char files[SIZE], const Config &config)
+{
+    if (!config.showFiles)
+    {
+        return;
+    }
+
+    printIndent(config);
+
+    for (int col = 0; col < SIZE; col++)
+    {
+        cout << " " << files[col] << " ";
+    }
+
+    cout << '\n';
+}
+
+/*
+    Print the optional title.
+*/
+void printTitle(const Config &config)
+{
+    if (!config.showTitle)
+    {
+        return;
+    }
+
+    printIndent(config);
+    cout << config.title << "\n\n";
+}
+
+/*
+    Print an optional player name and side.
+*/
+void printPlayer(const string &name,
+                 const string &side,
+                 const Config &config)
+{
+    if (!config.showPlayerNames)
+    {
+        return;
+    }
+
+    printIndent(config);
+    cout << name << " (" << side << ")\n\n";
+}
+
+/*
+    Explain piece letters and ownership.
+*/
+void printLegend(const Config &config)
+{
+    if (!config.showLegend)
+    {
+        return;
+    }
+
+    printIndent(config);
+    cout << "Uppercase: White | Lowercase: Black\n";
+
+    printIndent(config);
+    cout << "K/k: King    Q/q: Queen   R/r: Rook\n";
+
+    printIndent(config);
+    cout << "B/b: Bishop  N/n: Knight  P/p: Pawn\n";
+}
+
+/*
+    Main controls the sequence:
+    configure, prepare, color, place pieces, name players, display.
+*/
+int main()
+{
+    Config config;
+
+    char board[SIZE][SIZE];
+    SquareColor colors[SIZE][SIZE];
+    int ranks[SIZE];
+    char files[SIZE];
+
+    string whitePlayer;
+    string blackPlayer;
+
+    prepareBoard(board, ranks, files);
+    colorBoard(colors);
+
+    if (config.showWhitePieces)
+    {
+        placeWhitePieces(board);
+    }
+
+    if (config.showBlackPieces)
+    {
+        placeBlackPieces(board);
+    }
+
+    setPlayerNames(whitePlayer, blackPlayer, config);
+
+    cout << '\n';
+
+    printTitle(config);
+    printPlayer(blackPlayer, "Black", config);
+
+    printBoard(board, colors, ranks, config);
+    printFiles(files, config);
+
+    cout << '\n';
+
+    printPlayer(whitePlayer, "White", config);
+    printLegend(config);
+
+    cout << '\n';
+
+    return 0;
+}</script>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   ================================================================
+   ضع رابط تنزيل الكود هنا
+   ================================================================
+   استبدل القيمة أدناه برابط تنزيل الكود الخاص بك.
+   ================================================================ */
+const CODE_DOWNLOAD_URL = "https://gist.githubusercontent.com/a8kj7sea/aa49c9b58a8521ca1a79b284bbce5371/raw/fcd7ffd46114273e072c568f1da50edfa1c2527c/gistfile1.txt";
+
+const CPP_SOURCE = document.getElementById('cpp-source').textContent.trim();
+
+const DEFAULT_CONFIG = {
+  enableColors: true,
+  colorPieces: true,
+  showTitle: true,
+  showRanks: true,
+  showFiles: true,
+  showPlayerNames: true,
+  showLegend: true,
+  showWhitePieces: true,
+  showBlackPieces: true,
+  title: "CHESS",
+  whitePlayerName: "Anonymous White",
+  blackPlayerName: "Anonymous Black",
+  lightSquareColor: 247,
+  darkSquareColor: 240,
+  lightSquareSymbol: '.',
+  darkSquareSymbol: ':'
+};
+
+let simConfig = Object.assign({}, DEFAULT_CONFIG);
+
+function simPrepareBoard(board, ranks, files) {
+  for (var row = 0; row < 8; row++) {
+    ranks[row] = 8 - row;
+    files[row] = String.fromCharCode(97 + row);
+    for (var col = 0; col < 8; col++) {
+      board[row][col] = ' ';
+    }
+  }
+}
+
+function simColorBoard(colors) {
+  for (var row = 0; row < 8; row++) {
+    for (var col = 0; col < 8; col++) {
+      colors[row][col] = (row + col) % 2 === 0 ? 'WHITE' : 'BLACK';
+    }
+  }
+}
+
+function simPlaceWhite(board) {
+  var pieces = ['R','N','B','Q','K','B','N','R'];
+  for (var col = 0; col < 8; col++) {
+    board[6][col] = 'P';
+    board[7][col] = pieces[col];
+  }
+}
+
+function simPlaceBlack(board) {
+  var pieces = ['r','n','b','q','k','b','n','r'];
+  for (var col = 0; col < 8; col++) {
+    board[0][col] = pieces[col];
+    board[1][col] = 'p';
+  }
+}
+
+function simIsWhitePiece(piece) {
+  return piece >= 'A' && piece <= 'Z';
+}
+
+function simGetSquareSymbol(piece, color, config) {
+  if (piece !== ' ' || config.enableColors) return piece;
+  if (color === 'WHITE') return config.lightSquareSymbol;
+  return config.darkSquareSymbol;
+}
+
+function simGetBg(color, config) {
+  return color === 'WHITE' ? config.lightSquareColor : config.darkSquareColor;
+}
+
+function simGetFg(piece, color, config) {
+  var whiteText;
+  if (config.colorPieces) whiteText = simIsWhitePiece(piece);
+  else whiteText = (color === 'BLACK');
+  return whiteText ? 97 : 30;
+}
+
+function ansi256ToRgb(n) {
+  n = Math.max(0, Math.min(255, Math.round(n)));
+  if (n < 8) {
+    var std = [[0,0,0],[128,0,0],[0,128,0],[128,128,0],[0,0,128],[128,0,128],[0,128,128],[192,192,192]];
+    return std[n];
+  }
+  if (n < 16) {
+    var bright = [[128,128,128],[255,0,0],[0,255,0],[255,255,0],[0,0,255],[255,0,255],[0,255,255],[255,255,255]];
+    return bright[n - 8];
+  }
+  if (n < 232) {
+    n -= 16;
+    var r = Math.floor(n / 36);
+    var g = Math.floor((n % 36) / 6);
+    var b = n % 6;
+    function conv(c) { return c === 0 ? 0 : 55 + c * 40; }
+    return [conv(r), conv(g), conv(b)];
+  }
+  var v = 8 + (n - 232) * 10;
+  return [v, v, v];
+}
+
+function ansi256ToHex(n) {
+  var rgb = ansi256ToRgb(n);
+  return '#' + rgb.map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
+}
+
+function escapeHtml(text) {
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showToast(msg, type) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(function() {
+    toast.className = 'toast' + (type ? ' ' + type : '');
+  }, 3500);
+}
+
+function createBoardData() {
+  var board = [];
+  for (var i = 0; i < 8; i++) board.push(new Array(8).fill(' '));
+  return board;
+}
+
+function createColorsData() {
+  var colors = [];
+  for (var i = 0; i < 8; i++) colors.push(new Array(8).fill('WHITE'));
+  return colors;
+}
+
+function fullSimulate(config) {
+  var board = createBoardData();
+  var colors = createColorsData();
+  var ranks = new Array(8);
+  var files = new Array(8);
+  simPrepareBoard(board, ranks, files);
+  simColorBoard(colors);
+  if (config.showWhitePieces) simPlaceWhite(board);
+  if (config.showBlackPieces) simPlaceBlack(board);
+  return { board: board, colors: colors, ranks: ranks, files: files };
+}
+
+function buildConsoleHTML(config) {
+  var sim = fullSimulate(config);
+  var board = sim.board, colors = sim.colors, ranks = sim.ranks, files = sim.files;
+  var html = '';
+  var indent = config.showRanks ? '    ' : '  ';
+
+  html += '\n';
+
+  if (config.showTitle) {
+    html += indent + escapeHtml(config.title) + '\n\n';
+  }
+
+  if (config.showPlayerNames) {
+    html += indent + escapeHtml(config.blackPlayerName) + ' (Black)\n\n';
+  }
+
+  for (var row = 0; row < 8; row++) {
+    if (config.showRanks) {
+      html += ' ' + ranks[row] + '  ';
+    } else {
+      html += indent;
+    }
+    for (var col = 0; col < 8; col++) {
+      html += renderCellHTML(board[row][col], colors[row][col], config);
+    }
+    html += '\n';
+  }
+
+  if (config.showFiles) {
+    html += indent;
+    for (var col = 0; col < 8; col++) {
+      html += ' ' + files[col] + ' ';
+    }
+    html += '\n';
+  }
+
+  html += '\n';
+
+  if (config.showPlayerNames) {
+    html += indent + escapeHtml(config.whitePlayerName) + ' (White)\n\n';
+  }
+
+  if (config.showLegend) {
+    html += indent + 'Uppercase: White | Lowercase: Black\n';
+    html += indent + 'K/k: King    Q/q: Queen   R/r: Rook\n';
+    html += indent + 'B/b: Bishop  N/n: Knight  P/p: Pawn\n';
+  }
+
+  html += '\n';
+
+  return html;
+}
+
+function renderCellHTML(piece, color, config) {
+  var symbol = simGetSquareSymbol(piece, color, config);
+  var content = ' ' + symbol + ' ';
+  if (config.enableColors) {
+    var bgVal = simGetBg(color, config);
+    var fgVal = simGetFg(piece, color, config);
+    var bgHex = ansi256ToHex(bgVal);
+    var fgHex = fgVal === 97 ? '#ffffff' : '#000000';
+    return '<span style="background:' + bgHex + ';color:' + fgHex + '">' + escapeHtml(content) + '</span>';
+  }
+  return escapeHtml(content);
+}
+
+function renderConsole(el, config) {
+  el.innerHTML = buildConsoleHTML(config);
+}
+
+function renderBoard(container, options) {
+  var opts = options || {};
+  var config = opts.config || simConfig;
+  var sim = fullSimulate(config);
+  var board = opts.boardOverride || sim.board;
+  var colors = opts.colorsOverride || sim.colors;
+  var ranks = sim.ranks;
+  var files = sim.files;
+  var showLabels = opts.showLabels !== false;
+  var selectable = opts.selectable || false;
+  var selectedRow = opts.selectedRow != null ? opts.selectedRow : -1;
+  var selectedCol = opts.selectedCol != null ? opts.selectedCol : -1;
+  var highlightFn = opts.highlightFn;
+  var markers = opts.markers || {};
+  var pendingFn = opts.pendingFn;
+
+  var html = '<div class="board-wrap"><div class="board-grid' + (showLabels ? '' : ' no-labels') + '" dir="ltr">';
+
+  for (var row = 0; row < 8; row++) {
+    if (showLabels) {
+      html += '<div class="rank-lbl">' + ranks[row] + '</div>';
+    }
+    for (var col = 0; col < 8; col++) {
+      var piece = board[row][col];
+      var color = colors[row][col];
+      var symbol = simGetSquareSymbol(piece, color, config);
+      var classes = 'sq';
+      if (selectable) classes += ' clickable';
+      if (row === selectedRow && col === selectedCol) classes += ' selected';
+      if (highlightFn && highlightFn(row, col)) classes += ' highlight';
+      if (pendingFn && pendingFn(row, col)) classes += ' prep-pending';
+      else classes += ' prep-done';
+
+      var style = '';
+      if (config.enableColors && !markers[row + '_' + col]) {
+        var bgVal = simGetBg(color, config);
+        var fgVal = simGetFg(piece, color, config);
+        style = 'background:' + ansi256ToHex(bgVal) + ';color:' + (fgVal === 97 ? '#ffffff' : '#000000');
+      }
+
+      var display = markers[row + '_' + col] || symbol;
+      var dataAttr = ' data-row="' + row + '" data-col="' + col + '"';
+      html += '<div class="' + classes + '" style="' + style + '"' + dataAttr + ' tabindex="' + (selectable ? '0' : '-1') + '">' + escapeHtml(display) + '</div>';
+    }
+  }
+
+  if (showLabels) {
+    html += '<div class="file-spacer"></div>';
+    for (var col = 0; col < 8; col++) {
+      html += '<div class="file-lbl">' + files[col] + '</div>';
+    }
+  }
+
+  html += '</div></div>';
+  container.innerHTML = html;
+}
+
+var inspectorRow = 0, inspectorCol = 0;
+
+function initInspector() {
+  var container = document.getElementById('inspectorBoard');
+  renderBoard(container, {
+    selectable: true,
+    selectedRow: inspectorRow,
+    selectedCol: inspectorCol
+  });
+
+  container.addEventListener('click', function(e) {
+    var sq = e.target.closest('.sq');
+    if (!sq) return;
+    inspectorRow = parseInt(sq.dataset.row);
+    inspectorCol = parseInt(sq.dataset.col);
+    updateInspector();
+  });
+
+  container.addEventListener('keydown', function(e) {
+    var moved = false;
+    if (e.key === 'ArrowRight') { inspectorCol = Math.min(7, inspectorCol + 1); moved = true; }
+    else if (e.key === 'ArrowLeft') { inspectorCol = Math.max(0, inspectorCol - 1); moved = true; }
+    else if (e.key === 'ArrowDown') { inspectorRow = Math.min(7, inspectorRow + 1); moved = true; }
+    else if (e.key === 'ArrowUp') { inspectorRow = Math.max(0, inspectorRow - 1); moved = true; }
+    if (moved) { e.preventDefault(); updateInspector(); }
+  });
+
+  updateInspector();
+}
+
+function updateInspector() {
+  var container = document.getElementById('inspectorBoard');
+  renderBoard(container, {
+    selectable: true,
+    selectedRow: inspectorRow,
+    selectedCol: inspectorCol
+  });
+  var sq = container.querySelector('.sq.selected');
+  if (sq) sq.focus();
+
+  var sim = fullSimulate(simConfig);
+  var piece = sim.board[inspectorRow][inspectorCol];
+  var color = sim.colors[inspectorRow][inspectorCol];
+  var symbol = simGetSquareSymbol(piece, color, simConfig);
+  var coord = sim.files[inspectorCol] + sim.ranks[inspectorRow];
+
+  var info = document.getElementById('inspectorInfo');
+  info.innerHTML = '<div class="info-row"><span class="info-label">إحداثيات المصفوفة:</span><span class="info-value">board[' + inspectorRow + '][' + inspectorCol + ']</span></div>' +
+    '<div class="info-row"><span class="info-label">إحداثيات الشطرنج:</span><span class="info-value">' + coord + '</span></div>' +
+    '<div class="info-row"><span class="info-label">الحرف المخزّن:</span><span class="info-value">' + (piece === ' ' ? "' ' (مسافة)" : "'" + piece + "'") + '</span></div>' +
+    '<div class="info-row"><span class="info-label">لون الخانة:</span><span class="info-value">' + (color === 'WHITE' ? 'WHITE_SQUARE' : 'BLACK_SQUARE') + '</span></div>' +
+    '<div class="info-row"><span class="info-label">الحرف المعروض:</span><span class="info-value">' + (symbol === ' ' ? "' ' (مسافة)" : "'" + symbol + "'") + '</span></div>' +
+    '<div class="info-row"><span class="info-label">رقم الصف المعروض:</span><span class="info-value">' + sim.ranks[inspectorRow] + '</span></div>' +
+    '<div class="info-row"><span class="info-label">حرف العمود:</span><span class="info-value">' + sim.files[inspectorCol] + '</span></div>';
+}
+
+var prepState = { step: 0, playing: false, timer: null };
+var PREP_TOTAL = 72;
+
+function getPrepStepInfo(step) {
+  if (step === 0) return { row: 0, col: -1, type: 'row-setup' };
+  var row = Math.floor(step / 9);
+  var mod = step % 9;
+  if (mod === 0) return { row: row, col: -1, type: 'row-setup' };
+  return { row: row, col: mod - 1, type: 'cell' };
+}
+
+function renderPrepBoard() {
+  var container = document.getElementById('prepBoard');
+  var config = Object.assign({}, simConfig, { enableColors: false });
+  var colors = createColorsData();
+  simColorBoard(colors);
+
+  var boardData = createBoardData();
+  for (var r = 0; r < 8; r++) for (var c = 0; c < 8; c++) boardData[r][c] = null;
+
+  var markers = {};
+
+  for (var s = 1; s <= prepState.step; s++) {
+    var info = getPrepStepInfo(s);
+    if (info.type === 'cell') {
+      boardData[info.row][info.col] = ' ';
+    }
+  }
+
+  var currentInfo = prepState.step > 0 ? getPrepStepInfo(prepState.step) : null;
+
+  for (var r2 = 0; r2 < 8; r2++) {
+    for (var c2 = 0; c2 < 8; c2++) {
+      if (boardData[r2][c2] === null) {
+        markers[r2 + '_' + c2] = '·';
+      }
+    }
+  }
+
+  renderBoard(container, {
+    config: config,
+    showLabels: true,
+    markers: markers,
+    boardOverride: boardData,
+    colorsOverride: colors,
+    highlightFn: function(r, c) { return currentInfo && currentInfo.type === 'cell' && r === currentInfo.row && c === currentInfo.col; }
+  });
+}
+
+function updatePrepInfo() {
+  document.getElementById('prepStep').textContent = prepState.step + ' / ' + PREP_TOTAL;
+  var info = prepState.step > 0 ? getPrepStepInfo(prepState.step) : { row: '—', col: '—', type: 'none' };
+
+  document.getElementById('prepRow').textContent = info.type === 'none' ? '—' : info.row;
+  document.getElementById('prepCol').textContent = info.type === 'none' ? '—' : (info.col === -1 ? '—' : info.col);
+
+  var code = '—', rank = '—', file = '—';
+  if (info.type === 'row-setup') {
+    code = 'ranks[' + info.row + '] = 8 - ' + info.row + ' = ' + (8 - info.row) + '\nfiles[' + info.row + "] = 'a' + " + info.row + " = '" + String.fromCharCode(97 + info.row) + "'";
+    rank = (8 - info.row).toString();
+    file = "'" + String.fromCharCode(97 + info.row) + "'";
+  } else if (info.type === 'cell') {
+    code = 'board[' + info.row + '][' + info.col + "] = ' '";
+    rank = (8 - info.row).toString();
+    file = "'" + String.fromCharCode(97 + info.row) + "'";
+  }
+
+  document.getElementById('prepCode').textContent = code;
+  document.getElementById('prepRank').textContent = rank;
+  document.getElementById('prepFile').textContent = file;
+}
+
+function initPrepAnimation() {
+  renderPrepBoard();
+  updatePrepInfo();
+
+  document.getElementById('prepPlay').addEventListener('click', function() {
+    if (prepState.playing) return;
+    if (prepState.step >= PREP_TOTAL) prepState.step = 0;
+    prepState.playing = true;
+    prepState.timer = setInterval(function() {
+      if (prepState.step >= PREP_TOTAL) {
+        prepState.playing = false;
+        clearInterval(prepState.timer);
+        return;
+      }
+      prepState.step++;
+      renderPrepBoard();
+      updatePrepInfo();
+    }, 300);
+  });
+
+  document.getElementById('prepPause').addEventListener('click', function() {
+    prepState.playing = false;
+    clearInterval(prepState.timer);
+  });
+
+  document.getElementById('prepStep2').addEventListener('click', function() {
+    prepState.playing = false;
+    clearInterval(prepState.timer);
+    if (prepState.step < PREP_TOTAL) {
+      prepState.step++;
+      renderPrepBoard();
+      updatePrepInfo();
+    }
+  });
+
+  document.getElementById('prepReset').addEventListener('click', function() {
+    prepState.playing = false;
+    clearInterval(prepState.timer);
+    prepState.step = 0;
+    renderPrepBoard();
+    updatePrepInfo();
+  });
+}
+
+var colorSelRow = 7, colorSelCol = 0;
+
+function renderColorBoard() {
+  var container = document.getElementById('colorBoardDemo');
+  var config = Object.assign({}, simConfig, { enableColors: false });
+  renderBoard(container, {
+    config: config,
+    selectable: true,
+    selectedRow: colorSelRow,
+    selectedCol: colorSelCol,
+    highlightFn: function(r, c) { return r === colorSelRow && c === colorSelCol; }
+  });
+}
+
+function updateColorInfo() {
+  var sum = colorSelRow + colorSelCol;
+  var mod = sum % 2;
+  var result = mod === 0 ? 'WHITE_SQUARE' : 'BLACK_SQUARE';
+  var coord = String.fromCharCode(97 + colorSelCol) + (8 - colorSelRow);
+
+  var info = document.getElementById('colorInfo');
+  info.innerHTML = '<div class="info-row"><span class="info-label">الخانة:</span><span class="info-value">' + coord + '</span></div>' +
+    '<div class="info-row"><span class="info-label">row:</span><span class="info-value">' + colorSelRow + '</span></div>' +
+    '<div class="info-row"><span class="info-label">col:</span><span class="info-value">' + colorSelCol + '</span></div>' +
+    '<div class="info-row"><span class="info-label">row + col:</span><span class="info-value">' + sum + '</span></div>' +
+    '<div class="info-row"><span class="info-label">(row + col) % 2:</span><span class="info-value">' + mod + '</span></div>' +
+    '<div class="info-row"><span class="info-label">النتيجة:</span><span class="info-value" style="color:' + (mod === 0 ? 'var(--teal)' : 'var(--amber)') + ';font-weight:bold">' + result + '</span></div>';
+}
+
+function initColorBoardDemo() {
+  renderColorBoard();
+
+  document.getElementById('colorBoardDemo').addEventListener('click', function(e) {
+    var sq = e.target.closest('.sq');
+    if (!sq) return;
+    colorSelRow = parseInt(sq.dataset.row);
+    colorSelCol = parseInt(sq.dataset.col);
+    renderColorBoard();
+    updateColorInfo();
+  });
+
+  updateColorInfo();
+}
+
+var pieceState = { white: false, black: false };
+
+function renderPieceBoard() {
+  var container = document.getElementById('pieceBoardDemo');
+  var config = Object.assign({}, simConfig, { enableColors: false });
+  var board = createBoardData();
+  simPrepareBoard(board, [], []);
+  if (pieceState.white) simPlaceWhite(board);
+  if (pieceState.black) simPlaceBlack(board);
+  var colors = createColorsData();
+  simColorBoard(colors);
+  renderBoard(container, {
+    config: config,
+    boardOverride: board,
+    colorsOverride: colors
+  });
+}
+
+function updatePieceInfo() {
+  var info = document.getElementById('pieceInfo');
+  var html = '';
+  if (!pieceState.white && !pieceState.black) {
+    html = '<p style="color:var(--fg3)">الرقعة فاضية. اضغط زر لوضع القطع.</p>';
+  } else {
+    if (pieceState.white) html += '<p style="color:var(--teal)">✓ القطع البيضاء اتوضعت (صفوف 6 و 7)</p>';
+    if (pieceState.black) html += '<p style="color:var(--amber)">✓ القطع السوداء اتوضعت (صفوف 0 و 1)</p>';
+  }
+  info.innerHTML = html;
+}
+
+function initPieceDemo() {
+  renderPieceBoard();
+
+  document.getElementById('pieceWhiteBtn').addEventListener('click', function() {
+    pieceState.white = true;
+    renderPieceBoard();
+    updatePieceInfo();
+  });
+  document.getElementById('pieceBlackBtn').addEventListener('click', function() {
+    pieceState.black = true;
+    renderPieceBoard();
+    updatePieceInfo();
+  });
+  document.getElementById('pieceResetBtn').addEventListener('click', function() {
+    pieceState.white = false;
+    pieceState.black = false;
+    renderPieceBoard();
+    updatePieceInfo();
+  });
+}
+
+function initAnsiDemo() {
+  var slider = document.getElementById('ansiSlider');
+  var swatch = document.getElementById('ansiSwatch');
+
+  function updateAnsi() {
+    var val = parseInt(slider.value);
+    var rgb = ansi256ToRgb(val);
+    var hex = ansi256ToHex(val);
+
+    swatch.style.background = hex;
+    swatch.style.color = (rgb[0] + rgb[1] + rgb[2] > 384) ? '#000' : '#fff';
+    swatch.textContent = val;
+
+    document.getElementById('ansiValLabel').textContent = val;
+    document.getElementById('ansiNum').textContent = val;
+    document.getElementById('ansiRgb').textContent = rgb.join(',');
+    document.getElementById('ansiHex').textContent = hex;
+    document.getElementById('ansiCode').textContent = '\\033[48;5;' + val + 'm';
+  }
+
+  slider.addEventListener('input', updateAnsi);
+  updateAnsi();
+}
+
+function initCharTester() {
+  var input = document.getElementById('charInput');
+  var result = document.getElementById('charResult');
+
+  function updateCharTest() {
+    var ch = input.value;
+    if (!ch) {
+      result.textContent = '—';
+      result.className = 'char-tester-result';
+      return;
+    }
+    var isWhite = ch >= 'A' && ch <= 'Z';
+    result.textContent = isWhite ? 'true — قطعة بيضاء' : 'false — ليس قطعة بيضاء';
+    result.className = 'char-tester-result ' + (isWhite ? 'true' : 'false');
+  }
+
+  input.addEventListener('input', updateCharTest);
+  updateCharTest();
+}
+
+function initSymbolTester() {
+  var pieceSel = document.getElementById('symPiece');
+  var colorSel = document.getElementById('symColor');
+  var enableSel = document.getElementById('symEnable');
+
+  function update() {
+    var piece = pieceSel.value;
+    var color = colorSel.value;
+    var enable = enableSel.value === 'true';
+
+    document.querySelectorAll('.decision-node').forEach(function(n) { n.classList.remove('active'); });
+
+    var cond1 = piece !== ' ';
+    var cond2 = enable;
+    var cond = cond1 || cond2;
+
+    document.getElementById('dec-check').classList.add('active');
+
+    var result, decision;
+    if (cond) {
+      document.getElementById('dec-yes').classList.add('active');
+      result = piece === ' ' ? "' ' (مسافة)" : "'" + piece + "'";
+      decision = 'رجّع piece (الحرف نفسه)';
+    } else {
+      document.getElementById('dec-no').classList.add('active');
+      if (color === 'WHITE') {
+        document.getElementById('dec-white').classList.add('active');
+        result = "'.' (lightSquareSymbol)";
+        decision = 'رجّع config.lightSquareSymbol';
+      } else {
+        document.getElementById('dec-black').classList.add('active');
+        result = "':' (darkSquareSymbol)";
+        decision = 'رجّع config.darkSquareSymbol';
+      }
+    }
+
+    document.getElementById('symResult').textContent = result;
+    document.getElementById('symCondition').textContent = "piece != ' ' = " + cond1 + "  ||  enableColors = " + cond2 + "  →  " + cond;
+    document.getElementById('symDecision').textContent = decision;
+  }
+
+  pieceSel.addEventListener('change', update);
+  colorSel.addEventListener('change', update);
+  enableSel.addEventListener('change', update);
+  update();
+}
+
+var obState = { step: 0, playing: false, timer: null };
+
+function renderOutputBuilder() {
+  var container = document.getElementById('outputBuilder');
+  var sim = fullSimulate(simConfig);
+  var board = sim.board, colors = sim.colors, ranks = sim.ranks;
+
+  var currentRow = Math.floor((obState.step - 1) / 8);
+  var currentCol = (obState.step - 1) % 8;
+
+  var preview = '';
+  for (var r = 0; r < 8; r++) {
+    if (simConfig.showRanks) preview += ' ' + ranks[r] + '  ';
+    else preview += '  ';
+    for (var c = 0; c < 8; c++) {
+      if (r < currentRow || (r === currentRow && c <= currentCol)) {
+        preview += renderCellHTML(board[r][c], colors[r][c], simConfig);
+      } else {
+        preview += '   ';
+      }
+    }
+    preview += '\n';
+    if (r === currentRow && obState.step > 0 && obState.step < 64) {
+      break;
+    }
+  }
+
+  container.innerHTML = '<pre class="console-preview" dir="ltr">' + preview + '</pre>';
+
+  if (obState.step === 0) {
+    document.getElementById('obFn').textContent = 'printBoard';
+    document.getElementById('obRow').textContent = '—';
+    document.getElementById('obCol').textContent = '—';
+    document.getElementById('obPrint').textContent = '—';
+  } else {
+    var piece = board[currentRow][currentCol];
+    var color = colors[currentRow][currentCol];
+    var symbol = simGetSquareSymbol(piece, color, simConfig);
+    document.getElementById('obFn').textContent = 'printSquare';
+    document.getElementById('obRow').textContent = currentRow;
+    document.getElementById('obCol').textContent = currentCol;
+    document.getElementById('obPrint').textContent = '" " + "' + symbol + '" + " "';
+  }
+}
+
+function initOutputBuilder() {
+  renderOutputBuilder();
+
+  document.getElementById('obPlay').addEventListener('click', function() {
+    if (obState.playing) return;
+    if (obState.step >= 64) obState.step = 0;
+    obState.playing = true;
+    obState.timer = setInterval(function() {
+      if (obState.step >= 64) {
+        obState.playing = false;
+        clearInterval(obState.timer);
+        return;
+      }
+      obState.step++;
+      renderOutputBuilder();
+    }, 200);
+  });
+
+  document.getElementById('obPause').addEventListener('click', function() {
+    obState.playing = false;
+    clearInterval(obState.timer);
+  });
+
+  document.getElementById('obStep').addEventListener('click', function() {
+    obState.playing = false;
+    clearInterval(obState.timer);
+    if (obState.step < 64) {
+      obState.step++;
+      renderOutputBuilder();
+    }
+  });
+
+  document.getElementById('obReset').addEventListener('click', function() {
+    obState.playing = false;
+    clearInterval(obState.timer);
+    obState.step = 0;
+    renderOutputBuilder();
+  });
+}
+
+var TIMELINE_STEPS = [
+  { title: 'إنشاء Config', code: 'Config config;', desc: 'بينشئ كائن الإعدادات بالقيم الافتراضية.', state: 'config جاهز' },
+  { title: 'تعريف هياكل البيانات', code: 'char board[SIZE][SIZE];\nSquareColor colors[SIZE][SIZE];\nint ranks[SIZE];\nchar files[SIZE];', desc: 'بيعرف المصفوفات. هلّك الذاكرة فيها قيم غير محددة.', state: 'board, colors, ranks, files معرّفة' },
+  { title: 'تعريف متغيرات الأسماء', code: 'string whitePlayer;\nstring blackPlayer;', desc: 'بيعرف متغيرين للنصوص، فاضيين.', state: 'whitePlayer, blackPlayer فاضية' },
+  { title: 'تجهيز الرقعة', code: 'prepareBoard(board, ranks, files);', desc: 'بيملأ board بمسافات، وranks بالأرقام، وfiles بالأحرف.', state: 'board = مسافات\nranks = [8,7,6,5,4,3,2,1]\nfiles = [a,b,c,d,e,f,g,h]' },
+  { title: 'تلوين الخانات', code: 'colorBoard(colors);', desc: 'بيحدد لون كل خانة: أبيض أو أسود منطقي.', state: 'colors مملوءة' },
+  { title: 'وضع القطع البيضاء', code: 'if (config.showWhitePieces)\n    placeWhitePieces(board);', desc: 'لو showWhitePieces true، بيحطّ القطع البيضاء.', state: 'board فيها قطع بيضاء' },
+  { title: 'وضع القطع السوداء', code: 'if (config.showBlackPieces)\n    placeBlackPieces(board);', desc: 'لو showBlackPieces true، بيحطّ القطع السوداء.', state: 'board فيها قطع بيضاء وسوداء' },
+  { title: 'تعيين أسماء اللاعبين', code: 'setPlayerNames(whitePlayer, blackPlayer, config);', desc: 'بينسخ الأسماء من config للمتغيرات (عن طريق المرجع).', state: 'whitePlayer = "Anonymous White"\nblackPlayer = "Anonymous Black"' },
+  { title: 'سطر فارغ', code: "cout << '\\n';", desc: 'بيطبع سطر فارغ قبل كل شي.', state: '—' },
+  { title: 'العنوان', code: 'printTitle(config);', desc: 'لو showTitle true، بيطبع العنوان وسطرين فارغين.', state: '—' },
+  { title: 'اسم اللاعب الأسود', code: 'printPlayer(blackPlayer, "Black", config);', desc: 'لو showPlayerNames true، بيطبع اسم اللاعب الأسود.', state: '—' },
+  { title: 'طباعة الرقعة', code: 'printBoard(board, colors, ranks, config);', desc: 'بيطبع 8 صفوف، كل صف بـ 8 خانات.', state: '—' },
+  { title: 'أحرف الأعمدة', code: 'printFiles(files, config);', desc: 'لو showFiles true، بيطبع a b c d e f g h.', state: '—' },
+  { title: 'سطر فارغ', code: "cout << '\\n';", desc: 'سطر فاصل بين الرقعة واللاعب الأبيض.', state: '—' },
+  { title: 'اسم اللاعب الأبيض', code: 'printPlayer(whitePlayer, "White", config);', desc: 'لو showPlayerNames true، بيطبع اسم اللاعب الأبيض.', state: '—' },
+  { title: 'المفتاح', code: 'printLegend(config);', desc: 'لو showLegend true، بيطبع شرح الحروف.', state: '—' },
+  { title: 'النهاية', code: "cout << '\\n';\nreturn 0;", desc: 'سطر فارغ أخير، ثم إنهاء البرنامج بنجاح.', state: 'انتهى' }
+];
+
+var tlStep = 0;
+
+function updateTimeline() {
+  var container = document.getElementById('timeline');
+  container.querySelectorAll('.timeline-step').forEach(function(el, i) {
+    el.classList.toggle('active', i === tlStep);
+    el.classList.toggle('done', i < tlStep);
+  });
+
+  var s = TIMELINE_STEPS[tlStep];
+  var info = document.getElementById('timelineInfo');
+  info.innerHTML = '<h4 style="color:var(--amber);margin-bottom:.5rem">الخطوة ' + (tlStep + 1) + ': ' + s.title + '</h4>' +
+    '<p style="color:var(--fg2);margin-bottom:.8rem">' + s.desc + '</p>' +
+    '<div class="code-excerpt">' + escapeHtml(s.code) + '</div>' +
+    '<div style="margin-top:.8rem"><strong style="color:var(--teal)">الحالة:</strong>' +
+    '<pre style="white-space:pre-wrap;color:var(--fg);font-family:var(--mono);font-size:.85rem;margin-top:.3rem;direction:ltr;text-align:left">' + escapeHtml(s.state) + '</pre></div>';
+}
+
+function initTimeline() {
+  var container = document.getElementById('timeline');
+  var html = '';
+  TIMELINE_STEPS.forEach(function(s, i) {
+    html += '<div class="timeline-step' + (i === tlStep ? ' active' : '') + (i < tlStep ? ' done' : '') + '" data-step="' + i + '">';
+    html += '<div class="timeline-step-title">' + (i + 1) + '. ' + s.title + '</div>';
+    html += '<div class="timeline-step-code">' + escapeHtml(s.code.split('\n')[0]) + '</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('.timeline-step').forEach(function(el) {
+    el.addEventListener('click', function() {
+      tlStep = parseInt(el.dataset.step);
+      updateTimeline();
+    });
+  });
+
+  document.getElementById('tlPrev').addEventListener('click', function() {
+    if (tlStep > 0) { tlStep--; updateTimeline(); }
+  });
+  document.getElementById('tlNext').addEventListener('click', function() {
+    if (tlStep < TIMELINE_STEPS.length - 1) { tlStep++; updateTimeline(); }
+  });
+
+  updateTimeline();
+}
+
+function syncPlaygroundControls() {
+  document.getElementById('pg_enableColors').checked = simConfig.enableColors;
+  document.getElementById('pg_colorPieces').checked = simConfig.colorPieces;
+  document.getElementById('pg_showTitle').checked = simConfig.showTitle;
+  document.getElementById('pg_showRanks').checked = simConfig.showRanks;
+  document.getElementById('pg_showFiles').checked = simConfig.showFiles;
+  document.getElementById('pg_showPlayerNames').checked = simConfig.showPlayerNames;
+  document.getElementById('pg_showLegend').checked = simConfig.showLegend;
+  document.getElementById('pg_showWhitePieces').checked = simConfig.showWhitePieces;
+  document.getElementById('pg_showBlackPieces').checked = simConfig.showBlackPieces;
+  document.getElementById('pg_title').value = simConfig.title;
+  document.getElementById('pg_whitePlayerName').value = simConfig.whitePlayerName;
+  document.getElementById('pg_blackPlayerName').value = simConfig.blackPlayerName;
+  document.getElementById('pg_lightSquareColor').value = simConfig.lightSquareColor;
+  document.getElementById('pg_darkSquareColor').value = simConfig.darkSquareColor;
+  document.getElementById('pg_lightSquareSymbol').value = simConfig.lightSquareSymbol;
+  document.getElementById('pg_darkSquareSymbol').value = simConfig.darkSquareSymbol;
+}
+
+function updatePlaygroundCode() {
+  var lines = [
+    'Config config;',
+    '',
+    'config.enableColors = ' + simConfig.enableColors + ';',
+    'config.colorPieces = ' + simConfig.colorPieces + ';',
+    'config.showTitle = ' + simConfig.showTitle + ';',
+    'config.showRanks = ' + simConfig.showRanks + ';',
+    'config.showFiles = ' + simConfig.showFiles + ';',
+    'config.showPlayerNames = ' + simConfig.showPlayerNames + ';',
+    'config.showLegend = ' + simConfig.showLegend + ';',
+    'config.showWhitePieces = ' + simConfig.showWhitePieces + ';',
+    'config.showBlackPieces = ' + simConfig.showBlackPieces + ';',
+    'config.title = "' + simConfig.title + '";',
+    'config.whitePlayerName = "' + simConfig.whitePlayerName + '";',
+    'config.blackPlayerName = "' + simConfig.blackPlayerName + '";',
+    'config.lightSquareColor = ' + simConfig.lightSquareColor + ';',
+    'config.darkSquareColor = ' + simConfig.darkSquareColor + ';',
+    "config.lightSquareSymbol = '" + simConfig.lightSquareSymbol + "';",
+    "config.darkSquareSymbol = '" + simConfig.darkSquareSymbol + "';"
+  ];
+  document.getElementById('pgCode').textContent = lines.join('\n');
+}
+
+function updatePlayground() {
+  simConfig.enableColors = document.getElementById('pg_enableColors').checked;
+  simConfig.colorPieces = document.getElementById('pg_colorPieces').checked;
+  simConfig.showTitle = document.getElementById('pg_showTitle').checked;
+  simConfig.showRanks = document.getElementById('pg_showRanks').checked;
+  simConfig.showFiles = document.getElementById('pg_showFiles').checked;
+  simConfig.showPlayerNames = document.getElementById('pg_showPlayerNames').checked;
+  simConfig.showLegend = document.getElementById('pg_showLegend').checked;
+  simConfig.showWhitePieces = document.getElementById('pg_showWhitePieces').checked;
+  simConfig.showBlackPieces = document.getElementById('pg_showBlackPieces').checked;
+  simConfig.title = document.getElementById('pg_title').value || ' ';
+  simConfig.whitePlayerName = document.getElementById('pg_whitePlayerName').value || ' ';
+  simConfig.blackPlayerName = document.getElementById('pg_blackPlayerName').value || ' ';
+
+  var lc = parseInt(document.getElementById('pg_lightSquareColor').value);
+  var dc = parseInt(document.getElementById('pg_darkSquareColor').value);
+  simConfig.lightSquareColor = isNaN(lc) ? 247 : Math.max(0, Math.min(255, lc));
+  simConfig.darkSquareColor = isNaN(dc) ? 240 : Math.max(0, Math.min(255, dc));
+
+  var ls = document.getElementById('pg_lightSquareSymbol').value;
+  var ds = document.getElementById('pg_darkSquareSymbol').value;
+  simConfig.lightSquareSymbol = ls ? ls[0] : '.';
+  simConfig.darkSquareSymbol = ds ? ds[0] : ':';
+
+  renderConsole(document.getElementById('pgPreview'), simConfig);
+  updatePlaygroundCode();
+
+  if (document.getElementById('inspectorBoard')) updateInspector();
+  if (document.getElementById('outputBuilder')) renderOutputBuilder();
+}
+
+function initPlayground() {
+  var fields = ['enableColors','colorPieces','showTitle','showRanks','showFiles','showPlayerNames','showLegend','showWhitePieces','showBlackPieces','title','whitePlayerName','blackPlayerName','lightSquareColor','darkSquareColor','lightSquareSymbol','darkSquareSymbol'];
+
+  fields.forEach(function(f) {
+    var el = document.getElementById('pg_' + f);
+    el.addEventListener('input', updatePlayground);
+    el.addEventListener('change', updatePlayground);
+  });
+
+  document.getElementById('pgReset').addEventListener('click', function() {
+    Object.assign(simConfig, DEFAULT_CONFIG);
+    syncPlaygroundControls();
+    updatePlayground();
+    showToast('رجعت الإعدادات الأصلية', 'success');
+  });
+
+  updatePlayground();
+}
+
+function initSourceViewer() {
+  var lines = CPP_SOURCE.split('\n');
+  var html = '';
+  lines.forEach(function(line) {
+    html += '<span class="source-line">' + escapeHtml(line || ' ') + '\n</span>';
+  });
+  document.getElementById('sourceDisplay').innerHTML = html;
+
+  var style = document.createElement('style');
+  style.textContent = '.source-viewer .code-block pre{counter-reset:srcline}';
+  document.head.appendChild(style);
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('تم نسخ الكود بنجاح', 'success');
+  } catch (e) {
+    showToast('ما قدرت أنسخ. جرّب نسخ يدوي.', 'error');
+  }
+  document.body.removeChild(ta);
+}
+
+function copySource() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(CPP_SOURCE).then(function() {
+      showToast('تم نسخ الكود بنجاح', 'success');
+      var btns = [document.getElementById('copySourceBtn'), document.getElementById('copySourceBtn2')];
+      btns.forEach(function(b) { if (b) { b.classList.add('copied'); setTimeout(function() { b.classList.remove('copied'); }, 2000); } });
+    }).catch(function() {
+      fallbackCopy(CPP_SOURCE);
+    });
+  } else {
+    fallbackCopy(CPP_SOURCE);
+  }
+}
+
+function handleDownload(e) {
+  e.preventDefault();
+  var url = CODE_DOWNLOAD_URL.trim();
+  if (!url || url === 'PASTE_YOUR_CODE_DOWNLOAD_LINK_HERE') {
+    showToast('رابط التنزيل لسّا ما تحطّ. حط الرابط في الكود أولاً.', 'warn');
+    return;
+  }
+  try {
+    var parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      showToast('الرابط لازم يبدأ بـ http: أو https:', 'error');
+      return;
+    }
+    if (/\.(exe|bat|cmd|sh|com|scr)$/i.test(parsed.pathname)) {
+      showToast('ما بنقبل روابط ملفات تنفيذية', 'error');
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } catch (err) {
+    showToast('الرابط مش صحيح. تأكد من الصيغة.', 'error');
+  }
+}
+
+function initDownloadButtons() {
+  ['headerDownload', 'heroDownload', 'sectionDownloadBtn'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', handleDownload);
+  });
+}
+
+var finalPreviewConfig = Object.assign({}, DEFAULT_CONFIG);
+
+function initFinalPreview() {
+  renderConsole(document.getElementById('finalPreview'), finalPreviewConfig);
+
+  document.getElementById('toggleColorsBtn').addEventListener('click', function() {
+    finalPreviewConfig.enableColors = !finalPreviewConfig.enableColors;
+    document.getElementById('toggleColorsLabel').textContent = finalPreviewConfig.enableColors ? 'تشغيل' : 'إيقاف';
+    renderConsole(document.getElementById('finalPreview'), finalPreviewConfig);
+  });
+}
+
+var NAV_ITEMS = [
+  { id: 'sec-01', title: 'ماذا يفعل البرنامج؟' },
+  { id: 'sec-02', title: 'المخرجات النهائية' },
+  { id: 'sec-03', title: 'أساسيات C++' },
+  { id: 'sec-04', title: 'هياكل البيانات' },
+  { id: 'sec-05', title: 'إعدادات Config' },
+  { id: 'sec-06', title: 'تجهيز الرقعة' },
+  { id: 'sec-07', title: 'ألوان الخانات' },
+  { id: 'sec-08', title: 'وضع القطع' },
+  { id: 'sec-09', title: 'أسماء اللاعبين' },
+  { id: 'sec-10', title: 'ألوان ANSI' },
+  { id: 'sec-11', title: 'لون النص' },
+  { id: 'sec-12', title: 'الرمز المعروض' },
+  { id: 'sec-13', title: 'تجمّع المخرجات' },
+  { id: 'sec-14', title: 'التسميات والوسوم' },
+  { id: 'sec-15', title: 'تسلسل main()' },
+  { id: 'sec-16', title: 'ملعب الإعدادات' },
+  { id: 'sec-17', title: 'سوء فهم شائع' },
+  { id: 'sec-18', title: 'الكود الكامل' }
+];
+
+function initNavigation() {
+  var desktopNav = document.getElementById('desktopNav').querySelector('ol');
+  var mobileNav = document.getElementById('mobileNav').querySelector('ol');
+
+  NAV_ITEMS.forEach(function(item) {
+    var li1 = document.createElement('li');
+    var a1 = document.createElement('a');
+    a1.href = '#' + item.id;
+    a1.textContent = item.title;
+    li1.appendChild(a1);
+    desktopNav.appendChild(li1);
+
+    var li2 = document.createElement('li');
+    var a2 = document.createElement('a');
+    a2.href = '#' + item.id;
+    a2.textContent = item.title;
+    li2.appendChild(a2);
+    mobileNav.appendChild(li2);
+  });
+
+  var menuToggle = document.getElementById('menuToggle');
+  var navDrawer = document.getElementById('navDrawer');
+  var navDrawerClose = document.getElementById('navDrawerClose');
+
+  menuToggle.addEventListener('click', function() { navDrawer.classList.add('open'); });
+  navDrawerClose.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+  navDrawer.addEventListener('click', function(e) {
+    if (e.target === navDrawer) navDrawer.classList.remove('open');
+  });
+  mobileNav.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+  });
+
+  var sections = NAV_ITEMS.map(function(item) {
+    return document.getElementById(item.id);
+  });
+
+  var allNavLinks = document.querySelectorAll('.sidebar nav a, .nav-drawer nav a');
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var id = entry.target.id;
+        allNavLinks.forEach(function(link) {
+          var isActive = link.getAttribute('href') === '#' + id;
+          link.classList.toggle('active', isActive);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(function(sec) { observer.observe(sec); });
+
+  window.addEventListener('scroll', function() {
+    var scrolled = window.scrollY;
+    var height = document.documentElement.scrollHeight - window.innerHeight;
+    var percent = height > 0 ? (scrolled / height) * 100 : 0;
+    document.getElementById('progressFill').style.width = percent + '%';
+  }, { passive: true });
+}
+
+function initStartButton() {
+  document.getElementById('startBtn').addEventListener('click', function() {
+    document.getElementById('sec-01').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+function initCopyButtons() {
+  document.getElementById('copySourceBtn').addEventListener('click', copySource);
+  document.getElementById('copySourceBtn2').addEventListener('click', copySource);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initNavigation();
+  initStartButton();
+  initFinalPreview();
+  initInspector();
+  initPrepAnimation();
+  initColorBoardDemo();
+  initPieceDemo();
+  initAnsiDemo();
+  initCharTester();
+  initSymbolTester();
+  initOutputBuilder();
+  initTimeline();
+  initPlayground();
+  initSourceViewer();
+  initCopyButtons();
+  initDownloadButtons();
+});
+</script>
+</body>
+</html>
